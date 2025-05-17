@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="qtype/mcq_chill/db" VERSION="20250518" COMMENT="Qtype MCQ Chill install XML">
+  <TABLES>
+    <TABLE NAME="qtype_mcq_chill_options" COMMENT="Options spécifiques pour chaque question QCM Chill">
+      <FIELDS>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="negativemarking" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="allornothing" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="questionid"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
