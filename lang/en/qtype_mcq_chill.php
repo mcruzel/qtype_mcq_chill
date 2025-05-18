@@ -24,6 +24,8 @@
 
 $string['pluginname'] = 'QCM Chill';
 $string['pluginname_help'] = 'Un QCM à l\'interface intuitive, avec gestion automatique du barème, points négatifs et mode tout ou rien.';
+$string['pluginnameadding'] = 'Adding a QCM Chill question';
+$string['pluginnameediting'] = 'Editing a QCM Chill question';
 $string['choicetext'] = 'Réponse';
 $string['correctanswer'] = 'Bonne réponse';
 $string['negativemarking'] = 'Points négatifs par mauvaise case cochée';

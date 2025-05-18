@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_mcq_chill';
-$plugin->version   = 2025051800;
+$plugin->version   = 2025051900;
 $plugin->requires  = 2022041900; // Moodle 4.0+
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = 'v0.1';
+$plugin->release   = 'v0.2';
