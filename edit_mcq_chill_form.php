@@ -22,29 +22,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot . '/question/type/edit_question_form.php');
+defined('MOODLE_INTERNAL') || die();
 
-class qtype_mcq_chill_edit_form extends question_edit_form {
+require_once($CFG->dirroot . '/question/type/multichoice/edit_multichoice_form.php');
+
+class qtype_mcq_chill_edit_form extends qtype_multichoice_edit_form {
     protected function definition_inner($mform) {
-        // Champ pour les réponses.
-        $repeatsatstart = 4;
-        $this->repeat_elements([
-            $mform->createElement('text', 'answer', get_string('choicetext', 'qtype_mcq_chill')),
-            $mform->createElement('advcheckbox', 'correct', get_string('correctanswer', 'qtype_mcq_chill')),
-        ], $repeatsatstart, [], 'numanswers', 'addanswers', 1, get_string('addmorechoices', 'qtype_multichoice', 1));
+        parent::definition_inner($mform);
 
-        // Sélecteur de points négatifs.
-        $mform->addElement('float', 'negativemarking', get_string('negativemarking', 'qtype_mcq_chill'), ['min' => -100, 'max' => 0, 'step' => 1]);
+        $options = [];
+        for ($i = -100; $i <= 0; $i++) {
+            $options[$i] = $i.'%';
+        }
+        $mform->addElement('select', 'negativemarking', get_string('negativemarking', 'qtype_mcq_chill'), $options);
         $mform->setDefault('negativemarking', 0);
-        $mform->addRule('negativemarking', null, 'numeric', null, 'client');
 
-        // Case tout ou rien.
         $mform->addElement('advcheckbox', 'allornothing', get_string('allornothing', 'qtype_mcq_chill'));
         $mform->addHelpButton('allornothing', 'allornothing', 'qtype_mcq_chill');
     }
 
     public function set_data($question) {
-        // Pré-remplir les champs personnalisés si édition.
         if (isset($question->options)) {
             $question->negativemarking = $question->options->negativemarking;
             $question->allornothing = $question->options->allornothing;
@@ -61,3 +58,4 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
         return $question;
     }
 }
+

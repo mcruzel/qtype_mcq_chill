@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class qtype_mcq_chill_renderer extends qtype_with_combined_feedback_renderer {
-    // ...existing code...
+defined('MOODLE_INTERNAL') || die();
+
+class qtype_mcq_chill_renderer extends qtype_multichoice_renderer {
 }

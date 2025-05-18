@@ -7,7 +7,8 @@ Ce plugin Moodle ajoute un nouveau type de question "QCM Chill" avec une interfa
 - Option "tout ou rien" : la question ne rapporte des points que si toutes les bonnes réponses sont cochées et aucune mauvaise, sinon application du barème négatif.
 
 ## Installation
-1. Copier le dossier `qtype_mcq_chill` dans `moodle/question/type/`.
+1. Copier ce dossier dans `moodle/question/type/` en le renommant `mcq_chill`
+   (le chemin final doit être `moodle/question/type/mcq_chill`).
 2. Aller dans l'administration de Moodle pour terminer l'installation.
 
 ## Utilisation

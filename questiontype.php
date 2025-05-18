@@ -22,9 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot . '/question/type/shortanswer/questiontype.php');
+defined('MOODLE_INTERNAL') || die();
 
-class qtype_mcq_chill extends question_type {
+require_once($CFG->dirroot . '/question/type/multichoice/questiontype.php');
+
+class qtype_mcq_chill extends qtype_multichoice {
     /**
      * Enregistre les options spécifiques de la question (points négatifs, tout ou rien).
      */
@@ -61,37 +63,55 @@ class qtype_mcq_chill extends question_type {
     }
 
     /**
+     * Additional DB fields to save with the question.
+     */
+    public function extra_question_fields() {
+        return ['qtype_mcq_chill_options', 'negativemarking', 'allornothing'];
+    }
+
+    /**
      * Calcule la note pour une tentative.
      */
     public function grade_response($question, $response) {
-        // $response['answer'] = tableau des cases cochées (indexées comme les réponses).
-        $correct = $question->options->answers; // À adapter selon la structure réelle.
-        $useranswers = isset($response['answer']) ? $response['answer'] : [];
-        $allornothing = !empty($question->allornothing);
+        $answers = $question->options->answers;
+        $useranswers = isset($response['answer']) ? (array)$response['answer'] : [];
         $negativemarking = isset($question->negativemarking) ? $question->negativemarking : 0;
-        $total = count($correct);
+        $allornothing = !empty($question->allornothing);
+
         $good = 0;
         $bad = 0;
-        foreach ($correct as $i => $ans) {
+        foreach ($answers as $idx => $ans) {
             $iscorrect = $ans->fraction > 0.0;
-            $checked = in_array($i, $useranswers);
-            if ($iscorrect && $checked) {
+            $checked = in_array($idx, $useranswers);
+            if ($checked && $iscorrect) {
                 $good++;
-            } else if (!$iscorrect && $checked) {
+            } else if ($checked && !$iscorrect) {
                 $bad++;
             }
         }
+
+        $totalcorrect = $this->count_correct($answers);
         if ($allornothing) {
-            if ($bad == 0 && $good == $this->count_correct($correct)) {
+            if ($bad == 0 && $good == $totalcorrect) {
                 return [1.0, question_state::$gradedright];
-            } else {
-                return [$negativemarking / 100.0, question_state::$gradedwrong];
             }
-        } else {
-            $score = ($good - $bad * abs($negativemarking) / 100.0) / $this->count_correct($correct);
-            $score = max(0, min(1, $score));
-            return [$score, $score == 1.0 ? question_state::$gradedright : question_state::$gradedpartial];
+            $grade = $negativemarking / 100.0;
+            return [$grade, question_state::$gradedwrong];
         }
+
+        $score = 0;
+        if ($totalcorrect > 0) {
+            $score = $good / $totalcorrect;
+        }
+        $score -= $bad * abs($negativemarking) / 100.0;
+        $score = max(0, min(1, $score));
+        $state = question_state::$gradedpartial;
+        if ($score == 1.0) {
+            $state = question_state::$gradedright;
+        } else if ($score == 0) {
+            $state = question_state::$gradedwrong;
+        }
+        return [$score, $state];
     }
 
     /**
@@ -107,3 +127,4 @@ class qtype_mcq_chill extends question_type {
         return $count;
     }
 }
+
