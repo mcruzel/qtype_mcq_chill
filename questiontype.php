@@ -70,6 +70,13 @@ class qtype_mcq_chill extends qtype_multichoice {
     }
 
     /**
+     * Name of the column that stores the question id.
+     */
+    public function questionid_column_name() {
+        return 'questionid';
+    }
+
+    /**
      * Calcule la note pour une tentative.
      */
     public function grade_response($question, $response) {
