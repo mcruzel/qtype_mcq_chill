@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="qtype/mcq_chill/db" VERSION="20250518" COMMENT="Qtype MCQ Chill install XML">
+<XMLDB PATH="question/type/mcq_chill/db" VERSION="20250518" COMMENT="Qtype MCQ Chill install XML">
   <TABLES>
     <TABLE NAME="qtype_mcq_chill_options" COMMENT="Options spécifiques pour chaque question QCM Chill">
       <FIELDS>
