@@ -50,6 +50,9 @@ class qtype_mcq_chill extends question_type {
     /** @var int above this number of choices the random guess score is not computed. */
     const MAX_CHOICES_FOR_GUESS_SCORE = 12;
 
+    /** @var int minimum number of non-blank choices a question must have. */
+    const MIN_CHOICES = 2;
+
     #[\Override]
     public function extra_question_fields() {
         return [self::OPTIONS_TABLE, 'negativemarking', 'allornothing', 'shuffleanswers'];
@@ -68,16 +71,42 @@ class qtype_mcq_chill extends question_type {
 
     #[\Override]
     public function save_question_options($question) {
+        $result = new stdClass();
+
         // Normalise the settings whatever their origin (editing form, XML import, data generator).
-        $question->negativemarking = self::clean_negative_marking($question->negativemarking ?? 0);
+        $rawnegativemarking = $question->negativemarking ?? 0;
+        if (!is_numeric($rawnegativemarking) || (float) $rawnegativemarking < -1 || (float) $rawnegativemarking > 0) {
+            $result->notice = get_string('negativemarkingoutofrange', 'qtype_mcq_chill', s((string) $rawnegativemarking));
+        }
+        $question->negativemarking = self::clean_negative_marking($rawnegativemarking);
         $question->allornothing = self::clean_flag($question->allornothing ?? 0, 0);
         $question->shuffleanswers = self::clean_flag($question->shuffleanswers ?? 1, 1);
         $question->answer = $question->answer ?? [];
         $question->fraction = $question->fraction ?? [];
 
+        // The editing form enforces these rules; imports and generators bypass it.
+        $numchoices = 0;
+        $numcorrect = 0;
+        foreach (array_keys($question->answer) as $key) {
+            if ($this->is_answer_empty($question, $key)) {
+                continue;
+            }
+            $numchoices++;
+            if (self::is_correct_choice($question->fraction[$key] ?? 0)) {
+                $numcorrect++;
+            }
+        }
+        if ($numchoices < self::MIN_CHOICES) {
+            $result->notice = get_string('notenoughchoices', 'qtype_mcq_chill', self::MIN_CHOICES);
+        } else if ($numcorrect === 0) {
+            $result->notice = get_string('errnocorrectanswer', 'qtype_mcq_chill');
+        }
+
         parent::save_question_options($question);
         $this->save_question_answers($question);
         $this->save_hints($question);
+
+        return $result;
     }
 
     #[\Override]
@@ -134,7 +163,13 @@ class qtype_mcq_chill extends question_type {
 
     #[\Override]
     protected function fill_answer_fields($answer, $questiondata, $key, $context) {
-        $answer->answer = trim($this->get_answer_text($questiondata, $key));
+        $answerdata = $questiondata->answer[$key] ?? '';
+        if (is_array($answerdata)) {
+            // Imported choice: keep its declared format and store its embedded files, if any.
+            $answer->answer = trim($this->import_or_save_files($answerdata, $context, 'question', 'answer', $answer->id));
+        } else {
+            $answer->answer = trim($this->get_answer_text($questiondata, $key));
+        }
         $answer->answerformat = $this->get_answer_format($questiondata, $key);
         $answer->fraction = self::is_correct_choice($questiondata->fraction[$key] ?? 0) ? 1.0 : 0.0;
         // Per-choice feedback is not part of a QCM Chill question.
@@ -314,14 +349,34 @@ class qtype_mcq_chill extends question_type {
     }
 
     #[\Override]
+    public function has_html_answers() {
+        return true;
+    }
+
+    #[\Override]
     public function import_from_xml($data, $question, qformat_xml $format, $extra = null) {
         if (!isset($data['@']['type']) || $data['@']['type'] !== $this->name()) {
             return false;
         }
-        if (!isset($data['#']['answer']) || !is_array($data['#']['answer'])) {
-            $data['#']['answer'] = [];
+
+        $qo = $format->import_headers($data);
+        $qo->qtype = $this->name();
+        foreach (['negativemarking', 'allornothing', 'shuffleanswers'] as $field) {
+            // A missing setting keeps its default value.
+            $qo->$field = $format->getpath($data, ['#', $field, 0, '#'], null);
         }
-        return parent::import_from_xml($data, $question, $format, $extra);
+
+        // Keep the declared format (and the files) of each choice, as the core question types do.
+        $qo->answer = [];
+        $qo->fraction = [];
+        $answers = $data['#']['answer'] ?? [];
+        foreach (is_array($answers) ? $answers : [] as $answer) {
+            $ans = $format->import_answer($answer, true, $format->get_format($qo->questiontextformat));
+            $qo->answer[] = $ans->answer;
+            $qo->fraction[] = $ans->fraction;
+        }
+
+        return $qo;
     }
 
     /**
@@ -349,7 +404,8 @@ class qtype_mcq_chill extends question_type {
         if ($value === null) {
             return $default;
         }
-        return empty($value) ? 0 : 1;
+        // Understands yes/no, true/false and on/off, as written in hand-made XML files.
+        return clean_param($value, PARAM_BOOL) ? 1 : 0;
     }
 
     /**

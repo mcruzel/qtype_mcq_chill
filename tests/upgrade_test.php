@@ -71,9 +71,10 @@ final class upgrade_test extends \advanced_testcase {
         $this->assertTrue(xmldb_qtype_mcq_chill_upgrade(2025051900));
         $this->assertEquals(2026090300, get_config('qtype_mcq_chill', 'version'));
 
-        // The table has its standard structure again.
+        // The table has its standard structure again and the temporary copy of the old rows is gone.
         $this->assertTrue($dbman->field_exists($table, 'id'));
         $this->assertTrue($dbman->field_exists($table, 'shuffleanswers'));
+        $this->assertFalse($dbman->table_exists(new xmldb_table('qtype_mcq_chill_opts_new')));
 
         // The old values were converted.
         $options = $DB->get_record('qtype_mcq_chill_options', ['questionid' => $converted->id], '*', MUST_EXIST);
@@ -102,5 +103,12 @@ final class upgrade_test extends \advanced_testcase {
             $this->assertInstanceOf(\qtype_mcq_chill_question::class, $loaded);
             $this->assertCount(4, $loaded->answers);
         }
+
+        // Running the step again changes nothing.
+        set_config('version', 2025051900, 'qtype_mcq_chill');
+        $this->assertTrue(xmldb_qtype_mcq_chill_upgrade(2025051900));
+        $options = $DB->get_record('qtype_mcq_chill_options', ['questionid' => $converted->id], '*', MUST_EXIST);
+        $this->assertEqualsWithDelta(-0.75, $options->negativemarking, 0.0000001);
+        $this->assertEquals(3, $DB->count_records('qtype_mcq_chill_options'));
     }
 }

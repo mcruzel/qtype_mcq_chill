@@ -37,16 +37,10 @@ function xmldb_qtype_mcq_chill_upgrade($oldversion) {
         // Version 0.2 created qtype_mcq_chill_options without an id column, keyed on questionid,
         // with the negative marking stored as a percentage (-100 to 0). Rebuild the table with the
         // standard structure and convert the values to fractions (-1 to 0).
-        $table = new xmldb_table('qtype_mcq_chill_options');
-        $oldrows = [];
-        if ($dbman->table_exists($table) && !$dbman->field_exists($table, new xmldb_field('id'))) {
-            foreach ($DB->get_records('qtype_mcq_chill_options') as $row) {
-                $oldrows[$row->questionid] = $row;
-            }
-            $dbman->drop_table($table);
-        }
-
-        if (!$dbman->table_exists($table)) {
+        //
+        // The new structure is built under a temporary name and filled from the old rows before
+        // the old table is dropped, so that an interrupted upgrade can be run again without loss.
+        $definefields = function (xmldb_table $table): void {
             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
             $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
             $table->add_field('negativemarking', XMLDB_TYPE_NUMBER, '12, 7', null, XMLDB_NOTNULL, null, '0');
@@ -54,24 +48,45 @@ function xmldb_qtype_mcq_chill_upgrade($oldversion) {
             $table->add_field('shuffleanswers', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
             $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
             $table->add_key('questionid', XMLDB_KEY_FOREIGN_UNIQUE, ['questionid'], 'question', ['id']);
+        };
+
+        $table = new xmldb_table('qtype_mcq_chill_options');
+        $newtable = new xmldb_table('qtype_mcq_chill_opts_new');
+        $islegacy = $dbman->table_exists($table) && !$dbman->field_exists($table, new xmldb_field('id'));
+
+        if ($islegacy) {
+            if ($dbman->table_exists($newtable)) {
+                // Left over by an interrupted run: rebuild it from the old rows, still present.
+                $dbman->drop_table($newtable);
+            }
+            $definefields($newtable);
+            $dbman->create_table($newtable);
+            foreach ($DB->get_records('qtype_mcq_chill_options') as $old) {
+                if (!$DB->record_exists('question', ['id' => $old->questionid])) {
+                    continue;
+                }
+                $new = new stdClass();
+                $new->questionid = $old->questionid;
+                $new->negativemarking = max(-1, min(0, ((float) $old->negativemarking) / 100));
+                $new->allornothing = empty($old->allornothing) ? 0 : 1;
+                $new->shuffleanswers = 1;
+                $DB->insert_record('qtype_mcq_chill_opts_new', $new);
+            }
+            $dbman->drop_table($table);
+            $dbman->rename_table($newtable, 'qtype_mcq_chill_options');
+        } else if ($dbman->table_exists($newtable) && !$dbman->table_exists($table)) {
+            // Interrupted between the drop and the rename: the converted rows are in the new table.
+            $dbman->rename_table($newtable, 'qtype_mcq_chill_options');
+        }
+
+        if (!$dbman->table_exists($table)) {
+            $definefields($table);
             $dbman->create_table($table);
         }
 
         $field = new xmldb_field('shuffleanswers', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'allornothing');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
-        }
-
-        foreach ($oldrows as $old) {
-            if (!$DB->record_exists('question', ['id' => $old->questionid])) {
-                continue;
-            }
-            $new = new stdClass();
-            $new->questionid = $old->questionid;
-            $new->negativemarking = max(-1, min(0, ((float) $old->negativemarking) / 100));
-            $new->allornothing = empty($old->allornothing) ? 0 : 1;
-            $new->shuffleanswers = 1;
-            $DB->insert_record('qtype_mcq_chill_options', $new);
         }
 
         // Version 0.2 inherited from qtype_multichoice and left rows in its options table.

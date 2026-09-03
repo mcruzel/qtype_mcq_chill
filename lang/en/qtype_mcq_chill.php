@@ -35,6 +35,7 @@ $string['negativemarking'] = 'Negative marking for each wrong choice selected';
 $string['negativemarking_help'] = 'Share of the question mark deducted for each wrong choice the student selects. "None" means wrong choices are simply ignored; -100% means that one wrong choice cancels the whole question.
 
 Outside all-or-nothing mode, each correct choice selected earns an equal share of the mark. With the "Deferred feedback" and "Immediate feedback" behaviours the score of a question can go down to -100% of its mark (the gradebook never records a quiz grade below its minimum grade); the "Interactive" and "Adaptive" behaviours never take a question below zero, so negative marking then only reduces the partial credit.';
+$string['negativemarkingoutofrange'] = 'The negative marking "{$a}" is not a fraction between -1 and 0; it has been adjusted to the nearest allowed value.';
 $string['notenoughchoices'] = 'This type of question requires at least {$a} choices.';
 $string['pluginname'] = 'QCM Chill';
 $string['pluginname_help'] = 'A streamlined multiple-answer question: type the choices, tick the correct ones, pick the negative marking applied to each wrong choice selected and, if you wish, require all-or-nothing grading.';

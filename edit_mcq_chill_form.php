@@ -40,9 +40,6 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
     /** @var int number of choice rows added each time the "add" button is used. */
     const NUM_CHOICES_ADD = 2;
 
-    /** @var int minimum number of non-blank choices required. */
-    const MIN_CHOICES = 2;
-
     /** @var string[] the settings stored in the qtype_mcq_chill_options table. */
     const OPTION_FIELDS = ['negativemarking', 'allornothing', 'shuffleanswers'];
 
@@ -169,9 +166,9 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
             }
         }
 
-        if ($numchoices < self::MIN_CHOICES) {
-            for ($key = $numchoices; $key < self::MIN_CHOICES; $key++) {
-                $errors["answergroup[{$key}]"] = get_string('notenoughchoices', 'qtype_mcq_chill', self::MIN_CHOICES);
+        if ($numchoices < qtype_mcq_chill::MIN_CHOICES) {
+            for ($key = $numchoices; $key < qtype_mcq_chill::MIN_CHOICES; $key++) {
+                $errors["answergroup[{$key}]"] = get_string('notenoughchoices', 'qtype_mcq_chill', qtype_mcq_chill::MIN_CHOICES);
             }
         } else if ($numcorrect === 0) {
             $errors['answergroup[0]'] = get_string('errnocorrectanswer', 'qtype_mcq_chill');

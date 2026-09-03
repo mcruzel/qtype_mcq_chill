@@ -161,6 +161,11 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertSame(0, qtype_mcq_chill::clean_flag('0', 1));
         $this->assertSame(1, qtype_mcq_chill::clean_flag('1', 0));
         $this->assertSame(1, qtype_mcq_chill::clean_flag(true, 0));
+        $this->assertSame(0, qtype_mcq_chill::clean_flag('false', 1));
+        $this->assertSame(0, qtype_mcq_chill::clean_flag('no', 1));
+        $this->assertSame(0, qtype_mcq_chill::clean_flag('off', 1));
+        $this->assertSame(1, qtype_mcq_chill::clean_flag('yes', 0));
+        $this->assertSame(1, qtype_mcq_chill::clean_flag('true', 0));
     }
 
     /**
@@ -289,7 +294,7 @@ final class questiontype_test extends \advanced_testcase {
         $cat = $generator->create_question_category([]);
         $question = $generator->create_question('mcq_chill', 'twooffour', [
             'category' => $cat->id,
-            'negativemarking' => '-150',
+            'negativemarking' => '-0.75',
             'allornothing' => 'yes',
             'shuffleanswers' => '0',
             'answer' => ['One', '  ', 'Three', 'Four', ''],
@@ -297,7 +302,7 @@ final class questiontype_test extends \advanced_testcase {
         ]);
 
         $questiondata = question_bank::load_question_data($question->id);
-        $this->assertEquals(-1.0, $questiondata->options->negativemarking);
+        $this->assertEquals(-0.75, $questiondata->options->negativemarking);
         $this->assertEquals(1, $questiondata->options->allornothing);
         $this->assertEquals(0, $questiondata->options->shuffleanswers);
 
@@ -499,8 +504,24 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEquals('-0.5', $q->negativemarking);
         $this->assertEquals('0', $q->allornothing);
         $this->assertEquals('1', $q->shuffleanswers);
-        $this->assertEquals(['One', 'Two', 'Three', 'Four'], $q->answer);
+        $this->assertEquals(['One', 'Two', 'Three', 'Four'], array_column($q->answer, 'text'));
+        $this->assertEquals([FORMAT_HTML, FORMAT_HTML, FORMAT_HTML, FORMAT_HTML], array_column($q->answer, 'format'));
         $this->assertEquals([1, 0, 1, 0], $q->fraction);
+    }
+
+    public function test_xml_import_without_settings_nor_choices(): void {
+        $xml = '<question type="mcq_chill">
+    <name><text>Bare</text></name>
+    <questiontext format="html"><text>Nothing here.</text></questiontext>
+  </question>';
+        $importer = new \qformat_xml();
+        $q = $importer->try_importing_using_qtypes($this->parse_xml($xml)['question'], null, null, 'mcq_chill');
+
+        $this->assertNull($q->negativemarking);
+        $this->assertNull($q->allornothing);
+        $this->assertNull($q->shuffleanswers);
+        $this->assertSame([], $q->answer);
+        $this->assertSame([], $q->fraction);
     }
 
     public function test_xml_import_then_save(): void {
@@ -518,7 +539,7 @@ final class questiontype_test extends \advanced_testcase {
     <allornothing>1</allornothing>
     <shuffleanswers>0</shuffleanswers>
     <answer fraction="100" format="html"><text>A</text></answer>
-    <answer fraction="0" format="html"><text>B</text></answer>
+    <answer fraction="0" format="plain_text"><text>a &lt; b</text></answer>
     <answer fraction="100" format="html"><text><![CDATA[<b>E</b>]]></text></answer>
   </question>';
         $xmldata = $this->parse_xml($xml);
@@ -541,8 +562,47 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEqualsWithDelta(-0.3333333, $loaded->negativemarking, 0.0000001);
         $this->assertEquals(1, $loaded->allornothing);
         $this->assertEquals(0, $loaded->shuffleanswers);
-        $this->assertEquals(['A', 'B', '<b>E</b>'], array_column($loaded->answers, 'answer'));
+        $this->assertEquals(['A', 'a < b', '<b>E</b>'], array_column($loaded->answers, 'answer'));
+        $this->assertEquals([FORMAT_HTML, FORMAT_PLAIN, FORMAT_HTML], array_column($loaded->answers, 'answerformat'));
         $this->assertEquals([1.0, 0.0, 1.0], array_column($loaded->answers, 'fraction'));
+    }
+
+    public function test_save_question_options_notices(): void {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category([]);
+        $created = $generator->create_question('mcq_chill', 'twooffour', ['category' => $cat->id]);
+
+        $question = new \stdClass();
+        $question->id = $created->id;
+        $question->context = \context::instance_by_id($cat->contextid);
+        $question->negativemarking = '-0.5';
+        $question->answer = ['One', 'Two'];
+        $question->fraction = [1, 0];
+
+        // Valid data: no notice.
+        $result = $this->qtype->save_question_options($question);
+        $this->assertFalse(property_exists($result, 'notice'));
+
+        // Not enough choices.
+        $question->answer = ['One', '   '];
+        $result = $this->qtype->save_question_options($question);
+        $this->assertEquals(get_string('notenoughchoices', 'qtype_mcq_chill', 2), $result->notice);
+
+        // No correct choice.
+        $question->answer = ['One', 'Two'];
+        $question->fraction = [0, 0];
+        $result = $this->qtype->save_question_options($question);
+        $this->assertEquals(get_string('errnocorrectanswer', 'qtype_mcq_chill'), $result->notice);
+
+        // Negative marking outside the allowed range, silently bounded but reported.
+        $question->fraction = [1, 0];
+        $question->negativemarking = '-50';
+        $result = $this->qtype->save_question_options($question);
+        $this->assertEquals(get_string('negativemarkingoutofrange', 'qtype_mcq_chill', '-50'), $result->notice);
+        $this->assertEquals(-1.0, question_bank::load_question_data($created->id)->options->negativemarking);
     }
 
     public function test_xml_export(): void {
