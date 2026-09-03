@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renderer for the QCM Chill question type.
+ * Backup support for the QCM Chill question type.
  *
  * @package    qtype_mcq_chill
  * @copyright  2025 Maxime Cruzel
@@ -24,16 +24,18 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/question/type/multichoice/renderer.php');
+global $CFG;
+require_once($CFG->dirroot . '/backup/moodle2/backup_qtype_extrafields_plugin.class.php');
 
 /**
- * Generates the output for QCM Chill questions.
+ * Provides the information to backup QCM Chill questions.
  *
- * The question is displayed exactly like a core multiple choice question
- * with multiple answers (one checkbox per choice), without choice numbering.
+ * The question uses the standard question_answers table and the settings
+ * declared by {@see qtype_mcq_chill::extra_question_fields()}, so the generic
+ * "extra fields" backup plugin covers everything.
  *
  * @copyright  2025 Maxime Cruzel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_mcq_chill_renderer extends qtype_multichoice_multi_renderer {
+class backup_qtype_mcq_chill_plugin extends backup_qtype_extrafields_plugin {
 }
