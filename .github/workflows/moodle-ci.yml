@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14
+        image: postgres:${{ matrix.pgsql }}
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -26,16 +26,25 @@ jobs:
         include:
           - php: '8.0'
             moodle-branch: 'MOODLE_400_STABLE'
+            pgsql: '14'
           - php: '8.1'
             moodle-branch: 'MOODLE_401_STABLE'
+            pgsql: '14'
           - php: '8.3'
             moodle-branch: 'MOODLE_405_STABLE'
+            pgsql: '14'
+          - php: '8.2'
+            moodle-branch: 'MOODLE_500_STABLE'
+            pgsql: '14'
           - php: '8.4'
             moodle-branch: 'MOODLE_500_STABLE'
+            pgsql: '14'
           - php: '8.4'
             moodle-branch: 'MOODLE_501_STABLE'
+            pgsql: '15'
           - php: '8.4'
             moodle-branch: 'MOODLE_502_STABLE'
+            pgsql: '16'
 
     steps:
       - name: Check out plugin code
