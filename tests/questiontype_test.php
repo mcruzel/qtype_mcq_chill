@@ -250,12 +250,9 @@ final class questiontype_test extends \advanced_testcase {
         // Prepare the question as the editing page does, then run the form pre-processing.
         $questiondata = question_bank::load_question_data($question->id);
         $form = qtype_mcq_chill_test_helper::get_question_editing_form($cat, $questiondata);
-        $prepared = \phpunit_util::call_internal_method(
-            $form,
-            'data_preprocessing',
-            [clone $questiondata],
-            qtype_mcq_chill_edit_form::class
-        );
+        $method = new \ReflectionMethod(qtype_mcq_chill_edit_form::class, 'data_preprocessing');
+        $method->setAccessible(true);
+        $prepared = $method->invoke($form, clone $questiondata);
 
         $this->assertSame('-0.5', $prepared->negativemarking);
         $this->assertEquals(0, $prepared->allornothing);
