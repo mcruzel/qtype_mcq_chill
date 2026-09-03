@@ -27,7 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
-require_once($CFG->libdir . '/xmlize.php');
 require_once($CFG->dirroot . '/question/format/xml/format.php');
 require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 require_once($CFG->dirroot . '/question/type/mcq_chill/questiontype.php');
@@ -449,7 +448,7 @@ final class questiontype_test extends \advanced_testcase {
       </feedback>
     </answer>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_xml($xml);
 
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question'], null, null, 'mcq_chill');
@@ -484,7 +483,7 @@ final class questiontype_test extends \advanced_testcase {
     <answer fraction="0" format="html"><text>B</text></answer>
     <answer fraction="100" format="html"><text><![CDATA[<b>E</b>]]></text></answer>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_xml($xml);
         $importer = new \qformat_xml();
         $fromform = $importer->try_importing_using_qtypes($xmldata['question'], null, null, 'mcq_chill');
 
@@ -562,6 +561,22 @@ final class questiontype_test extends \advanced_testcase {
 ';
 
         $this->assert_same_xml($expectedxml, $xml);
+    }
+
+    /**
+     * Parse a Moodle XML fragment into the array structure used by the XML question format.
+     *
+     * @param string $xml the XML.
+     * @return array the parsed structure.
+     */
+    protected function parse_xml(string $xml): array {
+        global $CFG;
+        if (class_exists(\core\xml_parser::class)) {
+            // Moodle 5.1 and later.
+            return (new \core\xml_parser())->parse($xml);
+        }
+        require_once($CFG->libdir . '/xmlize.php');
+        return xmlize($xml);
     }
 
     /**
