@@ -34,6 +34,36 @@ require_once($CFG->dirroot . '/question/type/mcq_chill/db/upgrade.php');
  */
 #[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_qtype_mcq_chill_upgrade')]
 final class upgrade_test extends \advanced_testcase {
+    /**
+     * Put the options table back in its installed state, whatever a test did to it.
+     */
+    protected function tearDown(): void {
+        global $CFG, $DB;
+        $dbman = $DB->get_manager();
+        foreach (['qtype_mcq_chill_options', 'qtype_mcq_chill_opts_new'] as $name) {
+            $table = new xmldb_table($name);
+            if ($dbman->table_exists($table)) {
+                $dbman->drop_table($table);
+            }
+        }
+        $dbman->install_one_table_from_xmldb_file(
+            $CFG->dirroot . '/question/type/mcq_chill/db/install.xml',
+            'qtype_mcq_chill_options'
+        );
+        parent::tearDown();
+    }
+
+    /**
+     * The version declared in version.php, which the last upgrade step must reach.
+     *
+     * @return int the version.
+     */
+    protected function get_declared_version(): int {
+        $plugin = new \stdClass();
+        include(__DIR__ . '/../version.php');
+        return $plugin->version;
+    }
+
     public function test_upgrade_from_version_0_2(): void {
         global $DB;
         $this->resetAfterTest();
@@ -69,7 +99,7 @@ final class upgrade_test extends \advanced_testcase {
 
         set_config('version', 2025051900, 'qtype_mcq_chill');
         $this->assertTrue(xmldb_qtype_mcq_chill_upgrade(2025051900));
-        $this->assertEquals(2026090300, get_config('qtype_mcq_chill', 'version'));
+        $this->assertEquals($this->get_declared_version(), get_config('qtype_mcq_chill', 'version'));
 
         // The table has its standard structure again and the temporary copy of the old rows is gone.
         $this->assertTrue($dbman->field_exists($table, 'id'));

@@ -33,7 +33,13 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $collection = new collection('qtype_mcq_chill');
         $actual = provider::get_metadata($collection);
         $this->assertEquals($collection, $actual);
-        $this->assertCount(4, $actual->get_collection());
+        $names = [];
+        foreach ($actual->get_collection() as $item) {
+            $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $item);
+            $names[] = $item->get_name();
+        }
+        $this->assertEqualsCanonicalizing(['qtype_mcq_chill_defaultmark', 'qtype_mcq_chill_negativemarking',
+            'qtype_mcq_chill_allornothing', 'qtype_mcq_chill_shuffleanswers'], $names);
     }
 
     public function test_export_user_preferences_no_pref(): void {
@@ -81,6 +87,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         return [
             'default mark 2' => ['defaultmark', 2, '2'],
             'negative marking -50%' => ['negativemarking', -0.5, '-50%'],
+            'negative marking -33.33333%' => ['negativemarking', -0.3333333, '-33.33333%'],
+            'negative marking none' => ['negativemarking', 0, '0%'],
             'all or nothing yes' => ['allornothing', 1, get_string('yes')],
             'all or nothing no' => ['allornothing', 0, get_string('no')],
             'shuffle yes' => ['shuffleanswers', 1, get_string('yes')],

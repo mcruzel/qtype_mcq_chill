@@ -108,7 +108,7 @@ class qtype_mcq_chill extends question_type {
 
         parent::save_question_options($question);
         $this->save_question_answers($question);
-        $this->save_hints($question);
+        $this->save_hints($question, true);
 
         return $result;
     }

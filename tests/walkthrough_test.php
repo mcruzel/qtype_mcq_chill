@@ -168,6 +168,83 @@ final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->check_current_mark(1.5);
     }
 
+    public function test_interactive_never_goes_below_zero(): void {
+        $question = test_question_maker::make_question('mcq_chill', 'twooffour');
+        $question->shuffleanswers = 0;
+        $question->penalty = 0;
+
+        $this->start_attempt_at_question($question, 'interactive', 2);
+        $this->process_submission(['choice1' => '1', 'choice3' => '1', '-submit' => 1]);
+
+        // The core interactive behaviour floors the fraction at zero.
+        $this->check_current_state(question_state::$gradedwrong);
+        $this->check_current_mark(0);
+        $this->check_current_output($this->get_contains_incorrect_expectation());
+    }
+
+    public function test_adaptive_never_goes_below_zero(): void {
+        $question = test_question_maker::make_question('mcq_chill', 'twooffour');
+        $question->shuffleanswers = 0;
+        $question->penalty = 0;
+
+        $this->start_attempt_at_question($question, 'adaptive', 2);
+        $this->process_submission(['choice1' => '1', 'choice3' => '1', '-submit' => 1]);
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_mark(0);
+
+        // A later, better submission keeps the best fraction so far.
+        $this->process_submission(['choice0' => '1', '-submit' => 1]);
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_mark(1);
+        $this->quba->finish_all_questions();
+        $this->check_current_state(question_state::$gradedpartial);
+        $this->check_current_mark(1);
+    }
+
+    public function test_interactive_with_a_hint_clears_the_wrong_choices(): void {
+        $question = test_question_maker::make_question('mcq_chill', 'twooffour');
+        $question->shuffleanswers = 0;
+        $question->penalty = 0;
+        $question->hints = [
+            new \question_hint_with_parts(1, 'Think odd.', FORMAT_HTML, true, true),
+        ];
+
+        $this->start_attempt_at_question($question, 'interactive', 2);
+        $this->check_current_output($this->get_tries_remaining_expectation(2));
+
+        // One correct and one wrong choice: a try is left, the wrong choice is cleared on retry.
+        $this->process_submission(['choice0' => '1', 'choice1' => '1', '-submit' => 1]);
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_mark(null);
+        // The page carries the cleaned response as hidden fields, posted with the "Try again" button.
+        $prefix = $this->quba->get_field_prefix($this->slot);
+        $this->check_current_output(
+            $this->get_contains_try_again_button_expectation(true),
+            $this->get_contains_hint_expectation('Think odd.'),
+            $this->get_contains_num_parts_correct(1),
+            new \question_contains_tag_with_attributes(
+                'input',
+                ['type' => 'hidden', 'name' => $prefix . 'choice0', 'value' => '1']
+            ),
+            new \question_contains_tag_with_attributes(
+                'input',
+                ['type' => 'hidden', 'name' => $prefix . 'choice1', 'value' => '0']
+            )
+        );
+
+        $this->process_submission(['choice0' => '1', 'choice1' => '0', '-tryagain' => 1]);
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_output(
+            $this->get_contains_mc_checkbox_expectation('choice0', true, true),
+            $this->get_contains_mc_checkbox_expectation('choice1', true, false),
+            $this->get_tries_remaining_expectation(1)
+        );
+
+        $this->process_submission(['choice0' => '1', 'choice2' => '1', '-submit' => 1]);
+        $this->check_current_state(question_state::$gradedright);
+        $this->check_current_mark(2);
+    }
+
     public function test_regrade_with_a_new_version(): void {
         $question = test_question_maker::make_question('mcq_chill', 'twooffour');
         $question->shuffleanswers = 0;

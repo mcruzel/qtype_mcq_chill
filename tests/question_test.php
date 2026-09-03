@@ -258,6 +258,41 @@ final class question_test extends \advanced_testcase {
         ], $question->classify_response($this->response([1, 2])));
     }
 
+    public function test_classify_response_matches_possible_responses(): void {
+        foreach (['twooffour', 'allornothing', 'nopenalty'] as $which) {
+            $question = $this->make_started_question($which);
+            $possible = $question->qtype->get_possible_responses(test_question_maker::get_question_data('mcq_chill', $which));
+            $classified = $question->classify_response($this->response([0, 1, 2, 3]));
+            $this->assertCount(4, $classified);
+            foreach ($classified as $ansid => $response) {
+                $this->assertEqualsWithDelta(
+                    $possible[$ansid][$ansid]->fraction,
+                    $response->fraction,
+                    0.0000001,
+                    "{$which}: answer {$ansid}"
+                );
+            }
+        }
+    }
+
+    public function test_question_without_correct_choice(): void {
+        $question = test_question_maker::make_question('mcq_chill', 'twooffour');
+        $question->shuffleanswers = 0;
+        $question->answers[13]->fraction = 0.0;
+        $question->answers[15]->fraction = 0.0;
+        $question->start_attempt(new question_attempt_step(), 1);
+
+        $this->assertEquals(0, $question->get_num_correct_choices());
+        $this->assertEqualsWithDelta(-1.0, $question->get_min_fraction(), 0.0000001);
+        $this->assertSame([], $question->get_correct_response());
+
+        [$fraction, $state] = $question->grade_response($this->response([0]));
+        $this->assertEqualsWithDelta(-0.5, $fraction, 0.0000001);
+        $this->assertEquals(question_state::$gradedwrong, $state);
+        [$fraction] = $question->grade_response($this->response([0, 1, 2]));
+        $this->assertEqualsWithDelta(-1.0, $fraction, 0.0000001);
+    }
+
     public function test_clear_wrong_from_response(): void {
         $question = $this->make_started_question('twooffour');
         $this->assertEquals(

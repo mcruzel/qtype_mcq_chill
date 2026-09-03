@@ -90,14 +90,15 @@ class qtype_mcq_chill_test_helper extends question_test_helper {
         $q->negativemarking = $settings['negativemarking'];
         $q->allornothing = $settings['allornothing'];
         $q->shuffleanswers = 1;
+        // Same values as qtype_mcq_chill::initialise_question_instance().
         $q->answernumbering = 'none';
-        $q->showstandardinstruction = 0;
+        $q->showstandardinstruction = (int) get_config('qtype_multichoice', 'showstandardinstruction');
         $q->layout = qtype_multichoice_base::LAYOUT_VERTICAL;
-        $q->correctfeedback = '';
+        $q->correctfeedback = get_string('correctfeedbackdefault', 'question');
         $q->correctfeedbackformat = FORMAT_HTML;
-        $q->partiallycorrectfeedback = '';
+        $q->partiallycorrectfeedback = get_string('partiallycorrectfeedbackdefault', 'question');
         $q->partiallycorrectfeedbackformat = FORMAT_HTML;
-        $q->incorrectfeedback = '';
+        $q->incorrectfeedback = get_string('incorrectfeedbackdefault', 'question');
         $q->incorrectfeedbackformat = FORMAT_HTML;
 
         $q->answers = [];
@@ -159,7 +160,8 @@ class qtype_mcq_chill_test_helper extends question_test_helper {
         $form->questiontext = ['text' => 'Which are the odd numbers?', 'format' => FORMAT_HTML];
         $form->defaultmark = 1.0;
         $form->generalfeedback = ['text' => 'The odd numbers are One and Three.', 'format' => FORMAT_HTML];
-        $form->negativemarking = (string) $settings['negativemarking'];
+        // The exact key of the negative marking select.
+        $form->negativemarking = $settings['negativemarking'] == 0 ? '0.0' : (string) $settings['negativemarking'];
         $form->allornothing = $settings['allornothing'];
         $form->shuffleanswers = 1;
         $form->answer = [];

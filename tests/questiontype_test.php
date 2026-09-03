@@ -57,6 +57,24 @@ final class questiontype_test extends \advanced_testcase {
         parent::tearDown();
     }
 
+    /**
+     * Build the editing form of an existing question, as the editing page does (with its options).
+     *
+     * @param \stdClass $cat the question category.
+     * @param \stdClass $questiondata the question data, as loaded by question_bank::load_question_data().
+     * @return qtype_mcq_chill_edit_form the form.
+     */
+    protected function get_editing_form_of(\stdClass $cat, \stdClass $questiondata): qtype_mcq_chill_edit_form {
+        global $PAGE;
+        $PAGE->set_url('/question/bank/editquestion/question.php');
+        $questiondata->formoptions = (object) [
+            'canmove' => true, 'cansaveasnew' => true, 'canedit' => true, 'repeatelements' => true,
+        ];
+        $questiondata->beingcopied = false;
+        $contexts = new \core_question\local\bank\question_edit_contexts(\context::instance_by_id($cat->contextid));
+        return $this->qtype->create_editing_form('question.php', $questiondata, $cat, $contexts, true);
+    }
+
     public function test_name(): void {
         $this->assertEquals('mcq_chill', $this->qtype->name());
     }
@@ -115,14 +133,34 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertNull($this->qtype->get_random_guess_score($qdata));
     }
 
-    public function test_get_possible_responses(): void {
-        $qdata = test_question_maker::get_question_data('mcq_chill', 'twooffour');
-        $this->assertEquals([
-            13 => [13 => new question_possible_response('One', 0.5)],
-            14 => [14 => new question_possible_response('Two', -0.5)],
-            15 => [15 => new question_possible_response('Three', 0.5)],
-            16 => [16 => new question_possible_response('Four', -0.5)],
-        ], $this->qtype->get_possible_responses($qdata));
+    /**
+     * Cases for test_get_possible_responses.
+     *
+     * @return array[]
+     */
+    public static function possible_responses_provider(): array {
+        return [
+            'partial credit, -50%' => ['twooffour', [13 => 0.5, 14 => -0.5, 15 => 0.5, 16 => -0.5]],
+            'all or nothing, -25%' => ['allornothing', [13 => 0.5, 14 => -0.25, 15 => 0.5, 16 => -0.25]],
+            'no penalty' => ['nopenalty', [13 => 0.5, 14 => 0.0, 15 => 0.5, 16 => 0.0]],
+        ];
+    }
+
+    /**
+     * Test the possible responses of the response analysis.
+     *
+     * @dataProvider possible_responses_provider
+     * @param string $which the test question.
+     * @param array $expectedfractions answer id => fraction.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('possible_responses_provider')]
+    public function test_get_possible_responses(string $which, array $expectedfractions): void {
+        $qdata = test_question_maker::get_question_data('mcq_chill', $which);
+        $expected = [];
+        foreach ($expectedfractions as $ansid => $fraction) {
+            $expected[$ansid] = [$ansid => new question_possible_response($qdata->options->answers[$ansid]->answer, $fraction)];
+        }
+        $this->assertEquals($expected, $this->qtype->get_possible_responses($qdata));
     }
 
     /**
@@ -205,6 +243,7 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertTrue($form->is_validated());
 
         $fromform = $form->get_data();
+        $this->assertSame($formdata->negativemarking, $fromform->negativemarking);
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);
         $actualquestionsdata = question_load_questions([$returnedfromsave->id]);
         $actualquestiondata = end($actualquestionsdata);
@@ -241,7 +280,63 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEquals($questiondata->options->allornothing, $question->allornothing);
         $this->assertEquals(1, $question->shuffleanswers);
         $this->assertEquals('none', $question->answernumbering);
+        $this->assertSame((int) get_config('qtype_multichoice', 'showstandardinstruction'), $question->showstandardinstruction);
+        $this->assertEquals(get_string('correctfeedbackdefault', 'question'), $question->correctfeedback);
+        $this->assertEquals(get_string('partiallycorrectfeedbackdefault', 'question'), $question->partiallycorrectfeedback);
+        $this->assertEquals(get_string('incorrectfeedbackdefault', 'question'), $question->incorrectfeedback);
         $this->assertCount(4, $question->answers);
+    }
+
+    public function test_new_question_form_uses_the_saved_defaults(): void {
+        global $PAGE;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        set_config('questiondefaultssave', 1);
+
+        $fromform = test_question_maker::get_question_form_data('mcq_chill', 'allornothing');
+        $fromform->negativemarking = '-1.0';
+        $fromform->shuffleanswers = 0;
+        $this->qtype->save_defaults_for_new_questions($fromform);
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category([]);
+        $questiondata = new \stdClass();
+        $questiondata->qtype = 'mcq_chill';
+        $questiondata->createdby = 0;
+        $questiondata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
+        $PAGE->set_url('/question/bank/editquestion/question.php');
+        $form = qtype_mcq_chill_test_helper::get_question_editing_form($cat, $questiondata);
+        $html = $form->render();
+
+        $this->assertMatchesRegularExpression('~<option value="-1.0"\s+selected[^>]*>-100%</option>~', $html);
+        $this->assertMatchesRegularExpression('~<input[^>]*type="checkbox"[^>]*name="allornothing"[^>]*checked~', $html);
+        $this->assertDoesNotMatchRegularExpression('~<input[^>]*type="checkbox"[^>]*name="shuffleanswers"[^>]*checked~', $html);
+    }
+
+    public function test_form_keeps_a_non_standard_negative_marking(): void {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category([]);
+        $question = $generator->create_question('mcq_chill', 'twooffour', ['category' => $cat->id, 'negativemarking' => '-0.15']);
+
+        // The stored value is offered and selected in the form of the existing question.
+        $questiondata = question_bank::load_question_data($question->id);
+        $form = $this->get_editing_form_of($cat, $questiondata);
+        $form->set_data($questiondata);
+        $html = $form->render();
+        $this->assertMatchesRegularExpression('~<option value="-0.15"\s+selected[^>]*>-15%</option>~', $html);
+
+        // Saving the form keeps it.
+        $formdata = test_question_maker::get_question_form_data('mcq_chill', 'twooffour');
+        $formdata->category = "{$cat->id},{$cat->contextid}";
+        $formdata->negativemarking = '-0.15';
+        qtype_mcq_chill_edit_form::mock_submit((array) $formdata);
+        $form = $this->get_editing_form_of($cat, question_bank::load_question_data($question->id));
+        $this->assertTrue($form->is_validated());
+        $saved = $this->qtype->save_question($questiondata, $form->get_data());
+        $this->assertEqualsWithDelta(-0.15, question_bank::load_question($saved->id)->negativemarking, 0.0000001);
     }
 
     public function test_data_preprocessing_for_the_form(): void {
