@@ -399,7 +399,9 @@ final class questiontype_test extends \advanced_testcase {
         // One text field and one "correct answer" checkbox per choice, with the stored values.
         foreach (['One', 'Two', 'Three', 'Four'] as $key => $choice) {
             $this->assertMatchesRegularExpression(
-                '~<input[^>]*name="answer\[' . $key . '\]"[^>]*value="' . $choice . '"~', $html);
+                '~<input[^>]*name="answer\[' . $key . '\]"[^>]*value="' . $choice . '"~',
+                $html
+            );
             $this->assertMatchesRegularExpression('~<input[^>]*type="checkbox"[^>]*name="fraction\[' . $key . '\]"~', $html);
         }
         $this->assertMatchesRegularExpression('~<input[^>]*name="fraction\[0\]"[^>]*checked~', $html);

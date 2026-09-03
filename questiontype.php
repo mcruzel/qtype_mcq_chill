@@ -176,6 +176,7 @@ class qtype_mcq_chill extends question_type {
         return FORMAT_HTML;
     }
 
+    // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod.Found -- Widens the visibility on purpose.
     /**
      * Create an appropriate question_answer object from a database row.
      *
@@ -188,6 +189,21 @@ class qtype_mcq_chill extends question_type {
      */
     public function make_answer($answer) {
         return parent::make_answer($answer);
+    }
+    // phpcs:enable Generic.CodeAnalysis.UselessOverridingMethod.Found
+
+    /**
+     * Create a hint object from a database row.
+     *
+     * The inherited multiple choice question expects hints with parts
+     * (see qtype_multichoice_multi_question::get_hint()).
+     *
+     * @param stdClass $hint the hint row, as loaded from question_hints.
+     * @return question_hint_with_parts the hint object.
+     */
+    #[\Override]
+    protected function make_hint($hint) {
+        return question_hint_with_parts::load_from_record($hint);
     }
 
     #[\Override]
