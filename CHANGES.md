@@ -15,8 +15,10 @@ spécification, API Moodle, sécurité, style de code, compatibilité).
   cochée, mode « tout ou rien » ; note bornée entre -100 % et 100 %.
 - Formulaire d'édition minimal : texte des réponses, case « bonne réponse »,
   sélecteur de points négatifs, « tout ou rien », mélange des réponses.
-- Sauvegarde et restauration de cours, import/export XML, respect de la vie
-  privée (préférences utilisateur), icône, chaînes anglaises et françaises.
+- Sauvegarde et restauration de cours, import/export XML (format et fichiers
+  des réponses conservés, avertissement en cas de données incomplètes ou hors
+  bornes), respect de la vie privée (préférences utilisateur), icône, chaînes
+  anglaises et françaises.
 - Script de mise à niveau depuis la version 0.2 (conversion des pourcentages
   en fractions, nettoyage des lignes héritées de `qtype_multichoice`).
 - Tests PHPUnit (notation, type de question, formulaire, parcours de

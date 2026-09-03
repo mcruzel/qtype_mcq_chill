@@ -47,9 +47,15 @@ mauvaise vaut 1 point ; cocher deux mauvaises vaut -2 points.
   ou rien ».
 - Import et export au format Moodle XML, sauvegarde et restauration de cours,
   API de respect de la vie privée.
+- Import Moodle XML : le format déclaré de chaque réponse (HTML, texte brut,
+  Markdown) et ses fichiers sont conservés ; une question importée sans deux
+  réponses ou sans bonne réponse, ou dont les points négatifs sortent de
+  l'intervalle [-1, 0], est enregistrée après normalisation avec un
+  avertissement.
 - Non pris en charge : l'application mobile Moodle (aucun module mobile n'est
   fourni), les rétroactions par réponse et les indices (volontairement absents
-  du formulaire pour rester « chill »).
+  du formulaire pour rester « chill » ; ceux d'un fichier XML importé sont
+  ignorés).
 
 ## Installation
 
