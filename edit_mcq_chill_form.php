@@ -133,6 +133,9 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
                 foreach ($question->options->answers as $answer) {
                     $question->answer[$key] = $answer->answer;
                     $question->fraction[$key] = qtype_mcq_chill::is_correct_choice($answer->fraction) ? 1 : 0;
+                    // The repeated elements set a flat default for each checkbox, which would otherwise
+                    // take precedence over the stored value (same workaround as the core question types).
+                    unset($this->_form->_defaultValues["fraction[{$key}]"]);
                     $key++;
                 }
             }

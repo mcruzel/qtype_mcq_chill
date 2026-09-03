@@ -381,6 +381,45 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEquals(get_string('errcorrectblank', 'qtype_mcq_chill'), $errors['answergroup[1]']);
     }
 
+    public function test_form_rendering(): void {
+        global $PAGE;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category([]);
+        $question = $generator->create_question('mcq_chill', 'allornothing', ['category' => $cat->id]);
+
+        $questiondata = question_bank::load_question_data($question->id);
+        $form = qtype_mcq_chill_test_helper::get_question_editing_form($cat, $questiondata);
+        $form->set_data($questiondata);
+        $PAGE->set_url('/question/bank/editquestion/question.php');
+        $html = $form->render();
+
+        // One text field and one "correct answer" checkbox per choice, with the stored values.
+        foreach (['One', 'Two', 'Three', 'Four'] as $key => $choice) {
+            $this->assertMatchesRegularExpression(
+                '~<input[^>]*name="answer\[' . $key . '\]"[^>]*value="' . $choice . '"~', $html);
+            $this->assertMatchesRegularExpression('~<input[^>]*type="checkbox"[^>]*name="fraction\[' . $key . '\]"~', $html);
+        }
+        $this->assertMatchesRegularExpression('~<input[^>]*name="fraction\[0\]"[^>]*checked~', $html);
+        $this->assertDoesNotMatchRegularExpression('~<input[^>]*name="fraction\[1\]"[^>]*checked~', $html);
+
+        // The grading settings, with the stored values selected.
+        $this->assertStringContainsString(get_string('gradingoptions', 'qtype_mcq_chill'), $html);
+        $this->assertMatchesRegularExpression('~<option value="-0.25"\s+selected[^>]*>-25%</option>~', $html);
+        $this->assertMatchesRegularExpression('~<option value="0.0"[^>]*>' . get_string('none') . '</option>~', $html);
+        $this->assertMatchesRegularExpression('~<option value="-1.0"[^>]*>-100%</option>~', $html);
+        $this->assertMatchesRegularExpression('~<input[^>]*type="checkbox"[^>]*name="allornothing"[^>]*checked~', $html);
+        $this->assertMatchesRegularExpression('~<input[^>]*type="checkbox"[^>]*name="shuffleanswers"[^>]*checked~', $html);
+
+        // Nothing from the full multiple choice form leaks in.
+        $this->assertStringNotContainsString('name="single"', $html);
+        $this->assertStringNotContainsString('name="answernumbering"', $html);
+        $this->assertStringNotContainsString('name="correctfeedback', $html);
+        $this->assertStringNotContainsString('name="hint[0]', $html);
+    }
+
     public function test_get_negative_marking_options(): void {
         $options = qtype_mcq_chill_edit_form::get_negative_marking_options();
         $this->assertEquals(get_string('none'), reset($options));
