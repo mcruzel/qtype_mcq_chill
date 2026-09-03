@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['allornothing'] = 'All or nothing';
-$string['allornothing_help'] = 'If enabled, the full mark is awarded only when every correct choice is selected and no wrong choice is selected. Any other response scores zero, minus the negative marking for each wrong choice selected.';
+$string['allornothing_help'] = 'If enabled, the full mark is awarded only when every correct choice is selected and no wrong choice is selected. Any other response scores zero, minus the negative marking for each wrong choice selected (with the "Deferred feedback" and "Immediate feedback" behaviours only; the other behaviours never take a question below zero).';
 $string['choiceno'] = 'Choice {$a}';
 $string['correctanswer'] = 'Correct answer';
 $string['errcorrectblank'] = 'A blank choice cannot be marked as correct.';
@@ -34,11 +34,10 @@ $string['gradingoptions'] = 'Grading';
 $string['negativemarking'] = 'Negative marking for each wrong choice selected';
 $string['negativemarking_help'] = 'Share of the question mark deducted for each wrong choice the student selects. "None" means wrong choices are simply ignored; -100% means that one wrong choice cancels the whole question.
 
-Outside all-or-nothing mode, each correct choice selected earns an equal share of the mark. The score of a question can go down to -100% of its mark; the gradebook never records a quiz grade below its minimum grade.';
+Outside all-or-nothing mode, each correct choice selected earns an equal share of the mark. With the "Deferred feedback" and "Immediate feedback" behaviours the score of a question can go down to -100% of its mark (the gradebook never records a quiz grade below its minimum grade); the "Interactive" and "Adaptive" behaviours never take a question below zero, so negative marking then only reduces the partial credit.';
 $string['notenoughchoices'] = 'This type of question requires at least {$a} choices.';
 $string['pluginname'] = 'QCM Chill';
 $string['pluginname_help'] = 'A streamlined multiple-answer question: type the choices, tick the correct ones, pick the negative marking applied to each wrong choice selected and, if you wish, require all-or-nothing grading.';
-$string['pluginname_link'] = 'question/type/mcq_chill';
 $string['pluginnameadding'] = 'Adding a QCM Chill question';
 $string['pluginnameediting'] = 'Editing a QCM Chill question';
 $string['pluginnamesummary'] = 'A simple multiple-answer question with one checkbox per choice, negative marking for wrong choices and an optional all-or-nothing mode.';

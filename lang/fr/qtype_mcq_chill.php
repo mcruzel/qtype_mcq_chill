@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['allornothing'] = 'Tout ou rien';
-$string['allornothing_help'] = 'Si cette option est activée, la note complète n\'est attribuée que si toutes les bonnes réponses sont cochées et aucune mauvaise. Toute autre réponse vaut zéro, diminué des points négatifs pour chaque mauvaise case cochée.';
+$string['allornothing_help'] = 'Si cette option est activée, la note complète n\'est attribuée que si toutes les bonnes réponses sont cochées et aucune mauvaise. Toute autre réponse vaut zéro, diminué des points négatifs pour chaque mauvaise case cochée (avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate » seulement ; les autres comportements ne font jamais descendre une question sous zéro).';
 $string['choiceno'] = 'Réponse {$a}';
 $string['correctanswer'] = 'Bonne réponse';
 $string['errcorrectblank'] = 'Une réponse vide ne peut pas être marquée comme bonne réponse.';
@@ -34,11 +34,10 @@ $string['gradingoptions'] = 'Notation';
 $string['negativemarking'] = 'Points négatifs par mauvaise case cochée';
 $string['negativemarking_help'] = 'Part de la note de la question retirée pour chaque mauvaise case cochée par l\'étudiant. « Aucun » signifie que les mauvaises cases sont simplement ignorées ; -100 % signifie qu\'une seule mauvaise case annule toute la question.
 
-Hors mode « tout ou rien », chaque bonne case cochée rapporte une part égale de la note. La note d\'une question peut descendre jusqu\'à -100 % de sa valeur ; le carnet de notes n\'enregistre jamais une note de test inférieure à sa note minimale.';
+Hors mode « tout ou rien », chaque bonne case cochée rapporte une part égale de la note. Avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate », la note d\'une question peut descendre jusqu\'à -100 % de sa valeur (le carnet de notes n\'enregistre jamais une note de test inférieure à sa note minimale) ; les comportements « Interactif » et « Adaptatif » ne font jamais descendre une question sous zéro : les points négatifs y réduisent seulement le crédit partiel.';
 $string['notenoughchoices'] = 'Ce type de question requiert au moins {$a} réponses.';
 $string['pluginname'] = 'QCM Chill';
 $string['pluginname_help'] = 'Un QCM à réponses multiples simplifié : saisissez les réponses, cochez les bonnes, choisissez les points négatifs appliqués à chaque mauvaise case cochée et, si vous le souhaitez, exigez le mode « tout ou rien ».';
-$string['pluginname_link'] = 'question/type/mcq_chill';
 $string['pluginnameadding'] = 'Ajout d\'une question QCM Chill';
 $string['pluginnameediting'] = 'Modification d\'une question QCM Chill';
 $string['pluginnamesummary'] = 'Un QCM à réponses multiples simple, avec une case à cocher par réponse, des points négatifs pour les mauvaises réponses et un mode « tout ou rien » facultatif.';

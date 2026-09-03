@@ -244,11 +244,18 @@ final class question_test extends \advanced_testcase {
 
     public function test_classify_response(): void {
         $question = $this->make_started_question('twooffour');
+        // Each selected choice is reported with its real contribution to the mark.
         $this->assertEquals([
-            13 => new question_classified_response(13, 'One', 1),
-            14 => new question_classified_response(14, 'Two', 0),
+            13 => new question_classified_response(13, 'One', 0.5),
+            14 => new question_classified_response(14, 'Two', -0.5),
         ], $question->classify_response($this->response([0, 1])));
         $this->assertEquals([], $question->classify_response([]));
+
+        $question = $this->make_started_question('nopenalty');
+        $this->assertEquals([
+            14 => new question_classified_response(14, 'Two', 0),
+            15 => new question_classified_response(15, 'Three', 0.5),
+        ], $question->classify_response($this->response([1, 2])));
     }
 
     public function test_clear_wrong_from_response(): void {

@@ -89,6 +89,37 @@ class qtype_mcq_chill_question extends qtype_multichoice_multi_question {
         return [$fraction, question_state::graded_state_for_fraction($fraction)];
     }
 
+    #[\Override]
+    public function classify_response(array $response) {
+        // Report the real contribution of each selected choice to the mark, consistently
+        // with qtype_mcq_chill::get_possible_responses(), rather than the stored 1/0 fraction.
+        $numcorrect = $this->get_num_correct_choices();
+        $selected = [];
+        foreach ($this->order as $key => $ansid) {
+            if (!empty($response[$this->field($key)])) {
+                $selected[$ansid] = true;
+            }
+        }
+
+        $choices = [];
+        foreach ($this->answers as $ansid => $ans) {
+            if (!isset($selected[$ansid])) {
+                continue;
+            }
+            if ($ans->fraction > 0) {
+                $fraction = $numcorrect > 0 ? 1 / $numcorrect : 0;
+            } else {
+                $fraction = -min(1.0, abs((float) $this->negativemarking));
+            }
+            $choices[$ansid] = new question_classified_response(
+                $ansid,
+                $this->html_to_text($ans->answer, $ans->answerformat),
+                $fraction
+            );
+        }
+        return $choices;
+    }
+
     /**
      * Count the correct and the wrong choices selected in a response.
      *

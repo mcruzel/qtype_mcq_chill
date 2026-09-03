@@ -26,6 +26,8 @@ choisie (par exemple 0,5 pour « -50 % »). La fraction de la note obtenue est :
 Le résultat est borné entre -1 (moins la note de la question) et 1. Une
 question peut donc retirer des points au total du test ; le carnet de notes,
 lui, n'enregistre jamais une note inférieure à la note minimale du test.
+Voir la section « Compatibilité » pour les comportements qui bornent la note
+à zéro.
 
 Exemple : question sur 2 points, deux bonnes réponses, pénalité -50 %.
 Cocher une bonne réponse vaut 1 point ; cocher les deux bonnes et une
@@ -36,8 +38,13 @@ mauvaise vaut 1 point ; cocher deux mauvaises vaut -2 points.
 - Moodle 4.0 à 5.2 (PHP 8.0 à 8.4), y compris l'arborescence `public/`
   introduite par Moodle 5.1.
 - Les réponses des étudiants sont saisies, affichées et stockées par le
-  moteur de questions du cœur : tous les comportements (rétroaction a
-  posteriori, rétroaction immédiate, interactif, adaptatif) sont utilisables.
+  moteur de questions du cœur : tous les comportements sont utilisables.
+  Les notes négatives ne sont toutefois possibles qu'avec « Rétroaction a
+  posteriori » et « Rétroaction immédiate » (et leurs variantes avec degré
+  de certitude) : les comportements « Interactif » et « Adaptatif » du cœur
+  bornent la note d'une question à zéro, si bien que les points négatifs y
+  réduisent seulement le crédit partiel et n'ont pas d'effet en mode « tout
+  ou rien ».
 - Import et export au format Moodle XML, sauvegarde et restauration de cours,
   API de respect de la vie privée.
 - Non pris en charge : l'application mobile Moodle (aucun module mobile n'est
