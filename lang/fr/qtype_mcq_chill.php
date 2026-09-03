@@ -32,9 +32,9 @@ $string['errcorrectblank'] = 'Une réponse vide ne peut pas être marquée comme
 $string['errnocorrectanswer'] = 'Au moins une réponse doit être marquée comme bonne réponse.';
 $string['gradingoptions'] = 'Notation';
 $string['negativemarking'] = 'Points négatifs par mauvaise case cochée';
-$string['negativemarking_help'] = 'Part de la note de la question retirée pour chaque mauvaise case cochée par l\'étudiant. « Aucun » signifie que les mauvaises cases sont simplement ignorées ; -100 % signifie qu\'une seule mauvaise case annule toute la question.
+$string['negativemarking_help'] = 'Part de la note de la question retirée pour chaque mauvaise case cochée par l\'étudiant. « Aucun » signifie que les mauvaises cases sont simplement ignorées ; -100 % retire la totalité de la note de la question pour chaque mauvaise case cochée, si bien que la note de la question peut devenir négative.
 
-Hors mode « tout ou rien », chaque bonne case cochée rapporte une part égale de la note. Avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate », la note d\'une question peut descendre jusqu\'à -100 % de sa valeur (le carnet de notes n\'enregistre jamais une note de test inférieure à sa note minimale) ; les comportements « Interactif » et « Adaptatif » ne font jamais descendre une question sous zéro : les points négatifs y réduisent seulement le crédit partiel.';
+Hors mode « tout ou rien », chaque bonne case cochée rapporte une part égale de la note. Attention : avec « Aucun » et le crédit partiel, cocher toutes les réponses rapporte la note maximale ; choisissez des points négatifs ou le mode « tout ou rien » pour l\'éviter. Avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate », la note d\'une question peut descendre jusqu\'à -100 % de sa valeur (le carnet de notes n\'enregistre jamais une note de test inférieure à sa note minimale) ; les comportements « Interactif » et « Adaptatif » ne font jamais descendre une question sous zéro : les points négatifs y réduisent seulement le crédit partiel.';
 $string['negativemarkingoutofrange'] = 'Les points négatifs « {$a} » ne sont pas une fraction comprise entre -1 et 0 ; la valeur a été ramenée à la valeur admise la plus proche.';
 $string['notenoughchoices'] = 'Ce type de question requiert au moins {$a} réponses.';
 $string['pluginname'] = 'QCM Chill';

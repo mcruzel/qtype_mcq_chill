@@ -32,9 +32,9 @@ $string['errcorrectblank'] = 'A blank choice cannot be marked as correct.';
 $string['errnocorrectanswer'] = 'At least one choice must be marked as correct.';
 $string['gradingoptions'] = 'Grading';
 $string['negativemarking'] = 'Negative marking for each wrong choice selected';
-$string['negativemarking_help'] = 'Share of the question mark deducted for each wrong choice the student selects. "None" means wrong choices are simply ignored; -100% means that one wrong choice cancels the whole question.
+$string['negativemarking_help'] = 'Share of the question mark deducted for each wrong choice the student selects. "None" means wrong choices are simply ignored; -100% deducts the whole mark of the question for each wrong choice selected, so the score of the question can become negative.
 
-Outside all-or-nothing mode, each correct choice selected earns an equal share of the mark. With the "Deferred feedback" and "Immediate feedback" behaviours the score of a question can go down to -100% of its mark (the gradebook never records a quiz grade below its minimum grade); the "Interactive" and "Adaptive" behaviours never take a question below zero, so negative marking then only reduces the partial credit.';
+Outside all-or-nothing mode, each correct choice selected earns an equal share of the mark. Beware that with "None" and partial credit, selecting every choice earns the full mark: choose a negative marking or the all-or-nothing mode to avoid it. With the "Deferred feedback" and "Immediate feedback" behaviours the score of a question can go down to -100% of its mark (the gradebook never records a quiz grade below its minimum grade); the "Interactive" and "Adaptive" behaviours never take a question below zero, so negative marking then only reduces the partial credit.';
 $string['negativemarkingoutofrange'] = 'The negative marking "{$a}" is not a fraction between -1 and 0; it has been adjusted to the nearest allowed value.';
 $string['notenoughchoices'] = 'This type of question requires at least {$a} choices.';
 $string['pluginname'] = 'QCM Chill';

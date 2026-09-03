@@ -311,7 +311,7 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertCount(3, $answers);
         $this->assertEquals(['One', 'Three', 'Four'], array_column($answers, 'answer'));
         $this->assertEquals([1.0, 1.0, 0.0], array_column($answers, 'fraction'));
-        $this->assertEquals([FORMAT_HTML, FORMAT_HTML, FORMAT_HTML], array_column($answers, 'answerformat'));
+        $this->assertEquals([FORMAT_PLAIN, FORMAT_PLAIN, FORMAT_PLAIN], array_column($answers, 'answerformat'));
     }
 
     public function test_delete_question(): void {
@@ -597,11 +597,12 @@ final class questiontype_test extends \advanced_testcase {
         $result = $this->qtype->save_question_options($question);
         $this->assertEquals(get_string('errnocorrectanswer', 'qtype_mcq_chill'), $result->notice);
 
-        // Negative marking outside the allowed range, silently bounded but reported.
+        // Negative marking outside the allowed range: bounded, reported to developers only.
         $question->fraction = [1, 0];
         $question->negativemarking = '-50';
         $result = $this->qtype->save_question_options($question);
-        $this->assertEquals(get_string('negativemarkingoutofrange', 'qtype_mcq_chill', '-50'), $result->notice);
+        $this->assertDebuggingCalled(get_string('negativemarkingoutofrange', 'qtype_mcq_chill', '-50'));
+        $this->assertFalse(property_exists($result, 'notice'));
         $this->assertEquals(-1.0, question_bank::load_question_data($created->id)->options->negativemarking);
     }
 
@@ -631,25 +632,25 @@ final class questiontype_test extends \advanced_testcase {
     <negativemarking>-0.5</negativemarking>
     <allornothing>0</allornothing>
     <shuffleanswers>1</shuffleanswers>
-    <answer fraction="100" format="html">
+    <answer fraction="100" format="plain_text">
       <text>One</text>
       <feedback format="html">
         <text></text>
       </feedback>
     </answer>
-    <answer fraction="0" format="html">
+    <answer fraction="0" format="plain_text">
       <text>Two</text>
       <feedback format="html">
         <text></text>
       </feedback>
     </answer>
-    <answer fraction="100" format="html">
+    <answer fraction="100" format="plain_text">
       <text>Three</text>
       <feedback format="html">
         <text></text>
       </feedback>
     </answer>
-    <answer fraction="0" format="html">
+    <answer fraction="0" format="plain_text">
       <text>Four</text>
       <feedback format="html">
         <text></text>

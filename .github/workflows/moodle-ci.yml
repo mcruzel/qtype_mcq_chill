@@ -2,13 +2,16 @@ name: Moodle Plugin CI
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
-        image: postgres:${{ matrix.pgsql }}
+        image: postgres:16
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -19,6 +22,20 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 3
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MYSQL_USER: 'root'
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
 
     strategy:
       fail-fast: false
@@ -26,31 +43,35 @@ jobs:
         include:
           - php: '8.0'
             moodle-branch: 'MOODLE_400_STABLE'
-            pgsql: '14'
+            database: 'pgsql'
           - php: '8.1'
             moodle-branch: 'MOODLE_401_STABLE'
-            pgsql: '14'
+            database: 'mariadb'
           - php: '8.3'
             moodle-branch: 'MOODLE_405_STABLE'
-            pgsql: '14'
+            database: 'pgsql'
+          - php: '8.3'
+            moodle-branch: 'MOODLE_405_STABLE'
+            database: 'mariadb'
           - php: '8.2'
             moodle-branch: 'MOODLE_500_STABLE'
-            pgsql: '14'
-          - php: '8.4'
-            moodle-branch: 'MOODLE_500_STABLE'
-            pgsql: '14'
+            database: 'pgsql'
           - php: '8.4'
             moodle-branch: 'MOODLE_501_STABLE'
-            pgsql: '15'
+            database: 'pgsql'
           - php: '8.4'
             moodle-branch: 'MOODLE_502_STABLE'
-            pgsql: '16'
+            database: 'pgsql'
+          - php: '8.4'
+            moodle-branch: 'MOODLE_502_STABLE'
+            database: 'mariadb'
 
     steps:
       - name: Check out plugin code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           path: plugin
+          persist-credentials: false
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -70,7 +91,7 @@ jobs:
       - name: Install moodle-plugin-ci
         run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
-          DB: 'pgsql'
+          DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
       - name: PHP Lint

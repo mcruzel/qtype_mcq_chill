@@ -3,14 +3,17 @@
 Type de question Moodle « QCM Chill » : un questionnaire à choix multiples à
 réponses multiples, volontairement dépouillé, pour rédiger vite et noter juste.
 
-- Saisie rapide de l'énoncé et des réponses (une ligne de texte par réponse).
+- Saisie rapide de l'énoncé et des réponses (une ligne de texte par réponse,
+  affichée aux étudiants exactement comme elle a été saisie).
 - Une case à cocher pour désigner chaque bonne réponse.
-- Un sélecteur de points négatifs (de -100 % à 0, « Aucun ») appliqués à
-  chaque mauvaise case cochée.
+- Un sélecteur de points négatifs (« Aucun », -5 %, -10 %, -20 %, -25 %,
+  -33,33 %, -50 %, -75 %, -100 %) appliqués à chaque mauvaise case cochée.
 - Une option « tout ou rien » : la question ne rapporte des points que si
   toutes les bonnes réponses sont cochées et aucune mauvaise ; sinon le barème
   négatif s'applique.
-- Une option « mélanger les réponses » (activée par défaut).
+- Une option « mélanger les réponses », activée par défaut. Elle ne figure pas
+  dans la spécification initiale mais reste indispensable aux réponses à ordre
+  fixe (« Aucune des réponses ci-dessus », listes ordonnées).
 
 ## Barème
 
@@ -33,25 +36,38 @@ Exemple : question sur 2 points, deux bonnes réponses, pénalité -50 %.
 Cocher une bonne réponse vaut 1 point ; cocher les deux bonnes et une
 mauvaise vaut 1 point ; cocher deux mauvaises vaut -2 points.
 
+Attention : avec « Aucun » et le crédit partiel, cocher toutes les réponses
+rapporte la note maximale ; choisissez des points négatifs ou le mode « tout
+ou rien » pour l'éviter.
+
+Dans le rapport « Réponses » (analyse des réponses), chaque bonne case est
+comptée pour sa part de crédit partiel (1 / *C*) et chaque mauvaise case pour
+la pénalité, que le mode « tout ou rien » soit activé ou non.
+
 ## Compatibilité
 
 - Moodle 4.0 à 5.2 (PHP 8.0 à 8.4), y compris l'arborescence `public/`
   introduite par Moodle 5.1.
 - Les réponses des étudiants sont saisies, affichées et stockées par le
-  moteur de questions du cœur : tous les comportements sont utilisables.
-  Les notes négatives ne sont toutefois possibles qu'avec « Rétroaction a
-  posteriori » et « Rétroaction immédiate » (et leurs variantes avec degré
-  de certitude) : les comportements « Interactif » et « Adaptatif » du cœur
-  bornent la note d'une question à zéro, si bien que les points négatifs y
-  réduisent seulement le crédit partiel et n'ont pas d'effet en mode « tout
-  ou rien ».
-- Import et export au format Moodle XML, sauvegarde et restauration de cours,
-  API de respect de la vie privée.
-- Import Moodle XML : le format déclaré de chaque réponse (HTML, texte brut,
-  Markdown) et ses fichiers sont conservés ; une question importée sans deux
-  réponses ou sans bonne réponse, ou dont les points négatifs sortent de
-  l'intervalle [-1, 0], est enregistrée après normalisation avec un
-  avertissement.
+  moteur de questions du cœur : tous les comportements sont utilisables, avec
+  les nuances suivantes.
+  - Les notes négatives ne sont possibles qu'avec « Rétroaction a posteriori »
+    et « Rétroaction immédiate » : les comportements « Interactif » et
+    « Adaptatif » du cœur bornent la note d'une question à zéro, si bien que
+    les points négatifs y réduisent seulement le crédit partiel et n'ont pas
+    d'effet en mode « tout ou rien ».
+  - Avec les variantes « avec degré de certitude », le barème de certitude du
+    cœur remplace les points négatifs du plugin : toute réponse notée zéro ou
+    moins reçoit 0, -2 ou -6 fois la note selon la certitude déclarée, et le
+    crédit partiel est multiplié par 1, 2 ou 3.
+- Import et export au format Moodle XML : le format déclaré de chaque réponse
+  (HTML, texte brut, Markdown) et ses fichiers sont conservés. Comme pour les
+  types du cœur, une question sans deux réponses ou sans bonne réponse est
+  signalée et l'import s'arrête après elle ; des points négatifs hors de
+  l'intervalle [-1, 0] sont ramenés à la valeur admise la plus proche.
+- Sauvegarde et restauration de cours, API de respect de la vie privée
+  (les derniers réglages utilisés deviennent les valeurs par défaut de la
+  question suivante, sous forme de préférences utilisateur déclarées).
 - Non pris en charge : l'application mobile Moodle (aucun module mobile n'est
   fourni), les rétroactions par réponse et les indices (volontairement absents
   du formulaire pour rester « chill » ; ceux d'un fichier XML importé sont
@@ -78,8 +94,8 @@ dans `qtype_multichoice_options`.
 3. Choisir les points négatifs par mauvaise case cochée et, si besoin, activer
    « Tout ou rien ».
 
-Les valeurs choisies deviennent les valeurs par défaut de la question
-suivante (préférence utilisateur, déclarée à l'API de respect de la vie privée).
+Le texte d'une réponse est du texte brut : le HTML n'y est pas interprété,
+mais les filtres du site (notation mathématique, multilangue) s'appliquent.
 
 ## Développement
 
@@ -88,7 +104,8 @@ suivante (préférence utilisateur, déclarée à l'API de respect de la vie pri
 - Tests PHPUnit dans `tests/` : notation (`question_test.php`), type de
   question, formulaire, import/export XML (`questiontype_test.php`), parcours
   de tentative avec plusieurs comportements (`walkthrough_test.php`),
-  sauvegarde et restauration (`backup_restore_test.php`), vie privée
+  sauvegarde et restauration (`backup_restore_test.php`), mise à niveau depuis
+  la version 0.2 (`upgrade_test.php`), vie privée
   (`tests/privacy/provider_test.php`).
 
   ```bash
@@ -98,7 +115,9 @@ suivante (préférence utilisateur, déclarée à l'API de respect de la vie pri
 
 - Intégration continue GitHub Actions (`.github/workflows/moodle-ci.yml`)
   avec [moodle-plugin-ci](https://github.com/moodlehq/moodle-plugin-ci) sur
-  Moodle 4.0, 4.1, 4.5, 5.0, 5.1 et 5.2.
+  Moodle 4.0, 4.1, 4.5, 5.0, 5.1 et 5.2, sous PostgreSQL et MariaDB.
+- La traduction française est livrée dans `lang/fr` ; lors d'une publication
+  dans la base de plugins Moodle, elle a vocation à rejoindre AMOS.
 
 ## Licence
 

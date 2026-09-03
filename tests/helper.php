@@ -103,7 +103,7 @@ class qtype_mcq_chill_test_helper extends question_test_helper {
         $q->answers = [];
         foreach (self::get_choices() as $id => [$text, $fraction]) {
             $answer = new question_answer($id, $text, $fraction, '', FORMAT_HTML);
-            $answer->answerformat = FORMAT_HTML;
+            $answer->answerformat = FORMAT_PLAIN;
             $q->answers[$id] = $answer;
         }
 
@@ -135,7 +135,7 @@ class qtype_mcq_chill_test_helper extends question_test_helper {
             $qdata->options->answers[$id] = (object) [
                 'id' => $id,
                 'answer' => $text,
-                'answerformat' => FORMAT_HTML,
+                'answerformat' => FORMAT_PLAIN,
                 'fraction' => $fraction,
                 'feedback' => '',
                 'feedbackformat' => FORMAT_HTML,

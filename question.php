@@ -109,7 +109,7 @@ class qtype_mcq_chill_question extends qtype_multichoice_multi_question {
             if ($ans->fraction > 0) {
                 $fraction = $numcorrect > 0 ? 1 / $numcorrect : 0;
             } else {
-                $fraction = -min(1.0, abs((float) $this->negativemarking));
+                $fraction = -min(1.0, max(0.0, -(float) $this->negativemarking));
             }
             $choices[$ansid] = new question_classified_response(
                 $ansid,
@@ -162,7 +162,7 @@ class qtype_mcq_chill_question extends qtype_multichoice_multi_question {
         float $negativemarking,
         bool $allornothing
     ): float {
-        $penalty = $numwrongselected * min(1.0, abs($negativemarking));
+        $penalty = $numwrongselected * min(1.0, max(0.0, -$negativemarking));
 
         if ($allornothing) {
             $fullycorrect = $numcorrect > 0 && $numcorrectselected === $numcorrect && $numwrongselected === 0;

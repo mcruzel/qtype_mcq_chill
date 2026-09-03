@@ -43,6 +43,9 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
     /** @var string[] the settings stored in the qtype_mcq_chill_options table. */
     const OPTION_FIELDS = ['negativemarking', 'allornothing', 'shuffleanswers'];
 
+    /** @var string[] the negative markings offered, as fractions, from none to -100%. */
+    const NEGATIVE_MARKING_OPTIONS = ['0.0', '-0.05', '-0.1', '-0.2', '-0.25', '-0.3333333', '-0.5', '-0.75', '-1.0'];
+
     #[\Override]
     protected function definition_inner($mform) {
         $this->add_per_answer_fields(
@@ -186,17 +189,20 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
      * The choices offered for the negative marking, from none (0) to -100%.
      *
      * The keys are the fractions as strings, like the grade selects of the core
-     * question types. A stored value that is not in the standard list (for
-     * instance after an XML import) is added so that it is not silently lost.
+     * question types; the list is deliberately short. A stored value that is
+     * not in the list (for instance after an XML import) is added so that it is
+     * not silently lost.
      *
      * @param float|null $current the value currently stored for the question, if any.
      * @return array fraction => label.
      */
     public static function get_negative_marking_options(?float $current = null): array {
-        $options = ['0.0' => get_string('none')];
-        foreach (question_bank::fraction_options_full() as $fraction => $label) {
-            if ((float) $fraction < 0) {
-                $options[$fraction] = $label;
+        $options = [];
+        foreach (self::NEGATIVE_MARKING_OPTIONS as $fraction) {
+            if ((float) $fraction == 0) {
+                $options[$fraction] = get_string('none');
+            } else {
+                $options[$fraction] = format_float(100 * (float) $fraction, 5, true, true) . '%';
             }
         }
 

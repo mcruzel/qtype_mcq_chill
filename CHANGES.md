@@ -13,8 +13,9 @@ spécification, API Moodle, sécurité, style de code, compatibilité).
 - Notation conforme à la spécification : part égale de la note pour chaque
   bonne case cochée, points négatifs (de -100 % à 0) pour chaque mauvaise case
   cochée, mode « tout ou rien » ; note bornée entre -100 % et 100 %.
-- Formulaire d'édition minimal : texte des réponses, case « bonne réponse »,
-  sélecteur de points négatifs, « tout ou rien », mélange des réponses.
+- Formulaire d'édition minimal : texte des réponses (texte brut, affiché tel
+  quel), case « bonne réponse », sélecteur de points négatifs, « tout ou
+  rien », mélange des réponses.
 - Sauvegarde et restauration de cours, import/export XML (format et fichiers
   des réponses conservés, avertissement en cas de données incomplètes ou hors
   bornes), respect de la vie privée (préférences utilisateur), icône, chaînes
@@ -22,8 +23,9 @@ spécification, API Moodle, sécurité, style de code, compatibilité).
 - Script de mise à niveau depuis la version 0.2 (conversion des pourcentages
   en fractions, nettoyage des lignes héritées de `qtype_multichoice`).
 - Tests PHPUnit (notation, type de question, formulaire, parcours de
-  tentative, sauvegarde/restauration, vie privée) et intégration continue
-  GitHub Actions pour Moodle 4.0 à 5.2.
+  tentative, sauvegarde/restauration, mise à niveau, vie privée) et
+  intégration continue GitHub Actions pour Moodle 4.0 à 5.2 (PostgreSQL et
+  MariaDB).
 
 ## 0.2
 

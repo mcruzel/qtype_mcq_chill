@@ -76,7 +76,11 @@ class qtype_mcq_chill extends question_type {
         // Normalise the settings whatever their origin (editing form, XML import, data generator).
         $rawnegativemarking = $question->negativemarking ?? 0;
         if (!is_numeric($rawnegativemarking) || (float) $rawnegativemarking < -1 || (float) $rawnegativemarking > 0) {
-            $result->notice = get_string('negativemarkingoutofrange', 'qtype_mcq_chill', s((string) $rawnegativemarking));
+            // Bounded to the allowed range; a notice would stop an XML import after this question.
+            debugging(
+                get_string('negativemarkingoutofrange', 'qtype_mcq_chill', s((string) $rawnegativemarking)),
+                DEBUG_DEVELOPER
+            );
         }
         $question->negativemarking = self::clean_negative_marking($rawnegativemarking);
         $question->allornothing = self::clean_flag($question->allornothing ?? 0, 0);
@@ -205,10 +209,12 @@ class qtype_mcq_chill extends question_type {
      */
     protected function get_answer_format(stdClass $questiondata, $key): int {
         $answer = $questiondata->answer[$key] ?? '';
-        if (is_array($answer) && isset($answer['format'])) {
-            return (int) $answer['format'];
+        if (is_array($answer)) {
+            // Imported choice: keep the declared format.
+            return isset($answer['format']) ? (int) $answer['format'] : FORMAT_HTML;
         }
-        return FORMAT_HTML;
+        // Typed in the plain text field of the form: displayed exactly as typed.
+        return FORMAT_PLAIN;
     }
 
     // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod.Found -- Widens the visibility on purpose.
@@ -255,15 +261,17 @@ class qtype_mcq_chill extends question_type {
         $question->allornothing = self::clean_flag($questiondata->options->allornothing ?? 0, 0);
         $question->shuffleanswers = self::clean_flag($questiondata->options->shuffleanswers ?? 1, 1);
 
-        // Settings of the inherited multiple choice question that QCM Chill does not expose.
+        // Settings of the inherited multiple choice question that QCM Chill does not expose:
+        // no numbering, the site-wide default for the standard instruction, the standard
+        // "Your answer is correct / partially correct / incorrect" feedback.
         $question->answernumbering = 'none';
-        $question->showstandardinstruction = 0;
+        $question->showstandardinstruction = (int) get_config('qtype_multichoice', 'showstandardinstruction');
         $question->layout = qtype_multichoice_base::LAYOUT_VERTICAL;
-        $question->correctfeedback = '';
+        $question->correctfeedback = get_string('correctfeedbackdefault', 'question');
         $question->correctfeedbackformat = FORMAT_HTML;
-        $question->partiallycorrectfeedback = '';
+        $question->partiallycorrectfeedback = get_string('partiallycorrectfeedbackdefault', 'question');
         $question->partiallycorrectfeedbackformat = FORMAT_HTML;
-        $question->incorrectfeedback = '';
+        $question->incorrectfeedback = get_string('incorrectfeedbackdefault', 'question');
         $question->incorrectfeedbackformat = FORMAT_HTML;
 
         $this->initialise_question_answers($question, $questiondata, false);
@@ -311,6 +319,16 @@ class qtype_mcq_chill extends question_type {
         return $total / $numresponses;
     }
 
+    /**
+     * Describe the possible responses for the response analysis report.
+     *
+     * Each correct choice is reported with the share of the mark it earns
+     * under partial credit (1 / number of correct choices) and each wrong
+     * choice with the negative marking, whatever the all-or-nothing setting.
+     *
+     * @param stdClass $questiondata the question data, as loaded by get_question_options().
+     * @return array as required by {@see question_type::get_possible_responses()}.
+     */
     #[\Override]
     public function get_possible_responses($questiondata) {
         $answers = $questiondata->options->answers ?? [];

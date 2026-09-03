@@ -134,7 +134,7 @@ final class question_test extends \advanced_testcase {
             'floor at -100%' => [0, 3, 2, -0.5, false, -1.0],
             'ceiling at 100%' => [2, 0, 2, -0.5, false, 1.0],
             'penalty larger than 100% is capped' => [0, 1, 2, -1.5, false, -1.0],
-            'positive negative marking is ignored' => [1, 1, 2, 0.5, false, 0.0],
+            'positive negative marking is ignored' => [1, 1, 2, 0.5, false, 0.5],
             'no correct choice at all' => [0, 0, 0, -0.5, false, 0.0],
             'no correct choice in all-or-nothing mode' => [0, 0, 0, -0.5, true, 0.0],
             'all-or-nothing with missing correct choice' => [1, 0, 2, -1.0, true, 0.0],
