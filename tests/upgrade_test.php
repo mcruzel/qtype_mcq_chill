@@ -111,4 +111,52 @@ final class upgrade_test extends \advanced_testcase {
         $this->assertEqualsWithDelta(-0.75, $options->negativemarking, 0.0000001);
         $this->assertEquals(3, $DB->count_records('qtype_mcq_chill_options'));
     }
+
+    public function test_upgrade_resumes_after_an_interruption(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $dbman = $DB->get_manager();
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category([]);
+        $question = $generator->create_question('mcq_chill', 'twooffour', ['category' => $cat->id]);
+
+        // Interrupted after the old table was dropped but before the new one was renamed:
+        // the converted rows sit in the temporary table.
+        $table = new xmldb_table('qtype_mcq_chill_options');
+        $dbman->rename_table($table, 'qtype_mcq_chill_opts_new');
+        set_config('version', 2025051900, 'qtype_mcq_chill');
+        $this->assertTrue(xmldb_qtype_mcq_chill_upgrade(2025051900));
+        $this->assertTrue($dbman->table_exists($table));
+        $this->assertFalse($dbman->table_exists(new xmldb_table('qtype_mcq_chill_opts_new')));
+        $options = $DB->get_record('qtype_mcq_chill_options', ['questionid' => $question->id], '*', MUST_EXIST);
+        $this->assertEqualsWithDelta(-0.5, $options->negativemarking, 0.0000001);
+
+        // Interrupted while the temporary table was being filled: the old table is still there
+        // and the temporary table is rebuilt from it.
+        $dbman->drop_table($table);
+        $table->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('negativemarking', XMLDB_TYPE_NUMBER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('allornothing', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['questionid']);
+        $dbman->create_table($table);
+        $DB->execute(
+            'INSERT INTO {qtype_mcq_chill_options} (questionid, negativemarking, allornothing) VALUES (?, ?, ?)',
+            [$question->id, -25, 1]
+        );
+        $leftover = new xmldb_table('qtype_mcq_chill_opts_new');
+        $leftover->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $leftover->add_field('questionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $leftover->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $dbman->create_table($leftover);
+
+        set_config('version', 2025051900, 'qtype_mcq_chill');
+        $this->assertTrue(xmldb_qtype_mcq_chill_upgrade(2025051900));
+        $this->assertFalse($dbman->table_exists($leftover));
+        $options = $DB->get_record('qtype_mcq_chill_options', ['questionid' => $question->id], '*', MUST_EXIST);
+        $this->assertEqualsWithDelta(-0.25, $options->negativemarking, 0.0000001);
+        $this->assertEquals(1, $options->allornothing);
+        $this->assertEquals(1, $DB->count_records('qtype_mcq_chill_options'));
+    }
 }

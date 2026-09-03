@@ -167,14 +167,9 @@ class qtype_mcq_chill extends question_type {
 
     #[\Override]
     protected function fill_answer_fields($answer, $questiondata, $key, $context) {
-        $answerdata = $questiondata->answer[$key] ?? '';
-        if (is_array($answerdata)) {
-            // Imported choice: keep its declared format and store its embedded files, if any.
-            $answer->answer = trim($this->import_or_save_files($answerdata, $context, 'question', 'answer', $answer->id));
-        } else {
-            $answer->answer = trim($this->get_answer_text($questiondata, $key));
-        }
-        $answer->answerformat = $this->get_answer_format($questiondata, $key);
+        // A QCM Chill choice is always plain text, displayed exactly as typed.
+        $answer->answer = trim($this->get_answer_text($questiondata, $key));
+        $answer->answerformat = FORMAT_PLAIN;
         $answer->fraction = self::is_correct_choice($questiondata->fraction[$key] ?? 0) ? 1.0 : 0.0;
         // Per-choice feedback is not part of a QCM Chill question.
         $answer->feedback = '';
@@ -185,8 +180,8 @@ class qtype_mcq_chill extends question_type {
     /**
      * Get the text of a choice from the data being saved.
      *
-     * The editing form submits plain strings; an XML import may submit
-     * ['text' => ..., 'format' => ...] arrays.
+     * The editing form and the import submit plain strings; a data generator
+     * may submit ['text' => ...] arrays, which are accepted too.
      *
      * @param stdClass $questiondata the data being saved.
      * @param int $key the index of the choice.
@@ -198,23 +193,6 @@ class qtype_mcq_chill extends question_type {
             return (string) ($answer['text'] ?? '');
         }
         return (string) $answer;
-    }
-
-    /**
-     * Get the text format of a choice from the data being saved.
-     *
-     * @param stdClass $questiondata the data being saved.
-     * @param int $key the index of the choice.
-     * @return int one of the FORMAT_... constants.
-     */
-    protected function get_answer_format(stdClass $questiondata, $key): int {
-        $answer = $questiondata->answer[$key] ?? '';
-        if (is_array($answer)) {
-            // Imported choice: keep the declared format.
-            return isset($answer['format']) ? (int) $answer['format'] : FORMAT_HTML;
-        }
-        // Typed in the plain text field of the form: displayed exactly as typed.
-        return FORMAT_PLAIN;
     }
 
     // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod.Found -- Widens the visibility on purpose.
@@ -355,20 +333,15 @@ class qtype_mcq_chill extends question_type {
     #[\Override]
     public function move_files($questionid, $oldcontextid, $newcontextid) {
         parent::move_files($questionid, $oldcontextid, $newcontextid);
-        $this->move_files_in_answers($questionid, $oldcontextid, $newcontextid);
+        $this->move_files_in_answers($questionid, $oldcontextid, $newcontextid, true);
         $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
     }
 
     #[\Override]
     protected function delete_files($questionid, $contextid) {
         parent::delete_files($questionid, $contextid);
-        $this->delete_files_in_answers($questionid, $contextid);
+        $this->delete_files_in_answers($questionid, $contextid, true);
         $this->delete_files_in_hints($questionid, $contextid);
-    }
-
-    #[\Override]
-    public function has_html_answers() {
-        return true;
     }
 
     #[\Override]
@@ -384,17 +357,62 @@ class qtype_mcq_chill extends question_type {
             $qo->$field = $format->getpath($data, ['#', $field, 0, '#'], null);
         }
 
-        // Keep the declared format (and the files) of each choice, as the core question types do.
+        // A QCM Chill choice is plain text: HTML choices (for instance from a converted multiple
+        // choice question) are reduced to their text, and embedded files are ignored.
         $qo->answer = [];
         $qo->fraction = [];
         $answers = $data['#']['answer'] ?? [];
         foreach (is_array($answers) ? $answers : [] as $answer) {
-            $ans = $format->import_answer($answer, true, $format->get_format($qo->questiontextformat));
-            $qo->answer[] = $ans->answer;
+            $ans = $format->import_answer($answer, false, $format->get_format($qo->questiontextformat));
+            $declaredformat = $format->trans_format($format->getpath($answer, ['@', 'format'], 'html'));
+            $text = $ans->answer['text'];
+            if ($declaredformat != FORMAT_PLAIN) {
+                $text = html_to_text($text, 0, false);
+            }
+            $qo->answer[] = trim($text);
             $qo->fraction[] = $ans->fraction;
         }
 
+        // Report an unusable question to the importer, which skips it and honours "stop on error".
+        $numchoices = 0;
+        $numcorrect = 0;
+        foreach ($qo->answer as $key => $text) {
+            if (html_is_blank($text)) {
+                continue;
+            }
+            $numchoices++;
+            if (self::is_correct_choice($qo->fraction[$key])) {
+                $numcorrect++;
+            }
+        }
+        if ($numchoices < self::MIN_CHOICES) {
+            $this->report_import_error(
+                $format,
+                get_string('notenoughchoices', 'qtype_mcq_chill', self::MIN_CHOICES),
+                $qo->name
+            );
+            return false;
+        }
+        if ($numcorrect === 0) {
+            $this->report_import_error($format, get_string('errnocorrectanswer', 'qtype_mcq_chill'), $qo->name);
+            return false;
+        }
+
         return $qo;
+    }
+
+    /**
+     * Report an import error the way the question import formats do, so that the import
+     * counts it and, by default, stops before writing anything.
+     *
+     * @param qformat_xml $format the import format.
+     * @param string $message the error message.
+     * @param string $questionname the name of the question concerned.
+     */
+    protected function report_import_error(qformat_xml $format, string $message, string $questionname): void {
+        global $OUTPUT;
+        echo $OUTPUT->notification(s($questionname) . ': ' . $message, \core\output\notification::NOTIFY_ERROR);
+        $format->importerrors++;
     }
 
     /**

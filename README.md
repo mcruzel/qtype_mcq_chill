@@ -60,11 +60,15 @@ la pénalité, que le mode « tout ou rien » soit activé ou non.
     cœur remplace les points négatifs du plugin : toute réponse notée zéro ou
     moins reçoit 0, -2 ou -6 fois la note selon la certitude déclarée, et le
     crédit partiel est multiplié par 1, 2 ou 3.
-- Import et export au format Moodle XML : le format déclaré de chaque réponse
-  (HTML, texte brut, Markdown) et ses fichiers sont conservés. Comme pour les
-  types du cœur, une question sans deux réponses ou sans bonne réponse est
-  signalée et l'import s'arrête après elle ; des points négatifs hors de
-  l'intervalle [-1, 0] sont ramenés à la valeur admise la plus proche.
+- Import et export au format Moodle XML : les réponses sont des textes bruts ;
+  une réponse importée au format HTML (par exemple depuis un QCM du cœur dont
+  le type a été changé) est réduite à son texte et ses fichiers incorporés sont
+  ignorés. Comme pour les types du cœur, une question sans deux réponses ou
+  sans bonne réponse est signalée et l'import s'arrête après elle ; des points
+  négatifs hors de l'intervalle [-1, 0] sont ramenés à la valeur admise la
+  plus proche. Les autres formats (GIFT, Aiken, XHTML…) ne sont pas pris en
+  charge : l'export GIFT d'une question QCM Chill ne produit qu'une ligne de
+  commentaire, comme pour tout type de question tiers.
 - Sauvegarde et restauration de cours, API de respect de la vie privée
   (les derniers réglages utilisés deviennent les valeurs par défaut de la
   question suivante, sous forme de préférences utilisateur déclarées).

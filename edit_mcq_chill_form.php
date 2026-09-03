@@ -142,8 +142,9 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
         }
 
         if (isset($question->negativemarking)) {
-            // Match the keys of the select element (see get_negative_marking_options()).
-            $question->negativemarking = (string) qtype_mcq_chill::clean_negative_marking($question->negativemarking);
+            $question->negativemarking = self::negative_marking_key(
+                qtype_mcq_chill::clean_negative_marking($question->negativemarking)
+            );
         }
 
         return $question;
@@ -207,13 +208,28 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
         }
 
         if ($current !== null && $current < 0 && !self::has_fraction_option($options, $current)) {
-            $options[(string) $current] = format_float(100 * $current, 5, true, true) . '%';
+            $options[self::negative_marking_key($current)] = format_float(100 * $current, 5, true, true) . '%';
             uksort($options, function ($a, $b) {
                 return (float) $b <=> (float) $a;
             });
         }
 
         return $options;
+    }
+
+    /**
+     * The key of the negative marking select that denotes a stored value.
+     *
+     * @param float $value the stored fraction.
+     * @return string the matching key of the select, or the value with up to 7 decimals when not listed.
+     */
+    public static function negative_marking_key(float $value): string {
+        foreach (self::NEGATIVE_MARKING_OPTIONS as $key) {
+            if (abs((float) $key - $value) < 0.0000005) {
+                return $key;
+            }
+        }
+        return rtrim(rtrim(number_format($value, 7, '.', ''), '0'), '.');
     }
 
     /**

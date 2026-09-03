@@ -424,6 +424,15 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertStringNotContainsString('name="hint[0]', $html);
     }
 
+    public function test_negative_marking_key(): void {
+        $this->assertSame('0.0', qtype_mcq_chill_edit_form::negative_marking_key(0.0));
+        $this->assertSame('-1.0', qtype_mcq_chill_edit_form::negative_marking_key(-1.0));
+        $this->assertSame('-0.3333333', qtype_mcq_chill_edit_form::negative_marking_key(-0.3333333));
+        $this->assertSame('-0.5', qtype_mcq_chill_edit_form::negative_marking_key(-0.5));
+        $this->assertSame('-0.15', qtype_mcq_chill_edit_form::negative_marking_key(-0.15));
+        $this->assertSame('-0.1234567', qtype_mcq_chill_edit_form::negative_marking_key(-0.1234567));
+    }
+
     public function test_get_negative_marking_options(): void {
         $options = qtype_mcq_chill_edit_form::get_negative_marking_options();
         $this->assertEquals(get_string('none'), reset($options));
@@ -504,24 +513,63 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEquals('-0.5', $q->negativemarking);
         $this->assertEquals('0', $q->allornothing);
         $this->assertEquals('1', $q->shuffleanswers);
-        $this->assertEquals(['One', 'Two', 'Three', 'Four'], array_column($q->answer, 'text'));
-        $this->assertEquals([FORMAT_HTML, FORMAT_HTML, FORMAT_HTML, FORMAT_HTML], array_column($q->answer, 'format'));
+        $this->assertEquals(['One', 'Two', 'Three', 'Four'], $q->answer);
         $this->assertEquals([1, 0, 1, 0], $q->fraction);
     }
 
-    public function test_xml_import_without_settings_nor_choices(): void {
+    public function test_xml_import_without_settings(): void {
         $xml = '<question type="mcq_chill">
     <name><text>Bare</text></name>
-    <questiontext format="html"><text>Nothing here.</text></questiontext>
+    <questiontext format="html"><text>Pick the vowels.</text></questiontext>
+    <answer fraction="100"><text>A</text></answer>
+    <answer fraction="0"><text>B</text></answer>
   </question>';
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($this->parse_xml($xml)['question'], null, null, 'mcq_chill');
 
+        // Missing settings keep their default values once saved.
         $this->assertNull($q->negativemarking);
         $this->assertNull($q->allornothing);
         $this->assertNull($q->shuffleanswers);
-        $this->assertSame([], $q->answer);
-        $this->assertSame([], $q->fraction);
+        $this->assertSame(['A', 'B'], $q->answer);
+    }
+
+    /**
+     * Cases for test_xml_import_of_an_unusable_question.
+     *
+     * @return array[]
+     */
+    public static function unusable_xml_provider(): array {
+        return [
+            'no choice at all' => ['', 'notenoughchoices'],
+            'one choice' => ['<answer fraction="100"><text>A</text></answer>', 'notenoughchoices'],
+            'blank choices' => ['<answer fraction="100"><text>A</text></answer><answer fraction="0"><text> </text></answer>',
+                'notenoughchoices'],
+            'no correct choice' => ['<answer fraction="0"><text>A</text></answer><answer fraction="0"><text>B</text></answer>',
+                'errnocorrectanswer'],
+        ];
+    }
+
+    /**
+     * An unusable question is reported to the importer and skipped.
+     *
+     * @dataProvider unusable_xml_provider
+     * @param string $answersxml the answer elements.
+     * @param string $expectederror the expected error string identifier.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('unusable_xml_provider')]
+    public function test_xml_import_of_an_unusable_question(string $answersxml, string $expectederror): void {
+        $xml = '<question type="mcq_chill">
+    <name><text>Unusable</text></name>
+    <questiontext format="html"><text>Pick something.</text></questiontext>
+    ' . $answersxml . '
+  </question>';
+        $importer = new \qformat_xml();
+        $this->expectOutputRegex('~' . preg_quote(get_string($expectederror, 'qtype_mcq_chill', 2), '~') . '~');
+        $q = $importer->try_importing_using_qtypes($this->parse_xml($xml)['question'], null, null, 'mcq_chill');
+        $this->assertFalse($q);
+        // The importer may add its own generic error once every question type has declined.
+        $this->assertGreaterThanOrEqual(1, $importer->importerrors);
     }
 
     public function test_xml_import_then_save(): void {
@@ -562,8 +610,9 @@ final class questiontype_test extends \advanced_testcase {
         $this->assertEqualsWithDelta(-0.3333333, $loaded->negativemarking, 0.0000001);
         $this->assertEquals(1, $loaded->allornothing);
         $this->assertEquals(0, $loaded->shuffleanswers);
-        $this->assertEquals(['A', 'a < b', '<b>E</b>'], array_column($loaded->answers, 'answer'));
-        $this->assertEquals([FORMAT_HTML, FORMAT_PLAIN, FORMAT_HTML], array_column($loaded->answers, 'answerformat'));
+        // Choices are plain text: the HTML choice is reduced to its text.
+        $this->assertEquals(['A', 'a < b', 'E'], array_column($loaded->answers, 'answer'));
+        $this->assertEquals([FORMAT_PLAIN, FORMAT_PLAIN, FORMAT_PLAIN], array_column($loaded->answers, 'answerformat'));
         $this->assertEquals([1.0, 0.0, 1.0], array_column($loaded->answers, 'fraction'));
     }
 
