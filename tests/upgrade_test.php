@@ -32,7 +32,6 @@ require_once($CFG->dirroot . '/question/type/mcq_chill/db/upgrade.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     ::xmldb_qtype_mcq_chill_upgrade
  */
-#[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_qtype_mcq_chill_upgrade')]
 final class upgrade_test extends \advanced_testcase {
     /**
      * Put the options table back in its installed state, whatever a test did to it.

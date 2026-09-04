@@ -37,8 +37,6 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @covers     \backup_qtype_mcq_chill_plugin
  * @covers     \restore_qtype_mcq_chill_plugin
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\backup_qtype_mcq_chill_plugin::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\restore_qtype_mcq_chill_plugin::class)]
 final class backup_restore_test extends \advanced_testcase {
     public function test_backup_and_restore_a_course_with_a_question(): void {
         global $CFG, $DB, $USER;

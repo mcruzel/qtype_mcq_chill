@@ -110,7 +110,13 @@ mais les filtres du site (notation mathématique, multilangue) s'appliquent.
   de tentative avec plusieurs comportements (`walkthrough_test.php`),
   sauvegarde et restauration (`backup_restore_test.php`), mise à niveau depuis
   la version 0.2 (`upgrade_test.php`), vie privée
-  (`tests/privacy/provider_test.php`).
+  (`tests/privacy/provider_test.php`). Les métadonnées de test (`@covers`,
+  `@dataProvider`) sont des annotations et non des attributs PHP : c'est la
+  seule forme comprise à la fois par PHPUnit 9.5 (Moodle 4.0) et 11.5
+  (Moodle 5.2), et la seule que le sniff de couverture de moodle-cs accepte
+  sur Moodle 4.x. Sous Moodle 5.x, PHPUnit les signale comme dépréciations de
+  PHPUnit lui-même, sans faire échouer la suite ; le passage aux attributs
+  accompagnera l'abandon des versions 4.x.
 
   ```bash
   php admin/tool/phpunit/cli/init.php

@@ -34,8 +34,6 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @covers     \qtype_mcq_chill_question
  * @covers     \qtype_mcq_chill_renderer
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\qtype_mcq_chill_question::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\qtype_mcq_chill_renderer::class)]
 final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
     public function test_deferredfeedback_fully_correct(): void {
         $question = test_question_maker::make_question('mcq_chill', 'twooffour');

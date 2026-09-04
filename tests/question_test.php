@@ -41,7 +41,6 @@ require_once($CFG->dirroot . '/question/type/mcq_chill/question.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \qtype_mcq_chill_question
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\qtype_mcq_chill_question::class)]
 final class question_test extends \advanced_testcase {
     /**
      * Make a test question and start an attempt at it, without shuffling the choices.
@@ -110,7 +109,6 @@ final class question_test extends \advanced_testcase {
      * @param float $expectedfraction the expected fraction.
      * @param question_state $expectedstate the expected state.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('grade_response_provider')]
     public function test_grade_response(
         string $which,
         array $selected,
@@ -154,7 +152,6 @@ final class question_test extends \advanced_testcase {
      * @param bool $allornothing the all-or-nothing mode.
      * @param float $expected the expected fraction.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('compute_fraction_provider')]
     public function test_compute_fraction(
         int $numcorrectselected,
         int $numwrongselected,

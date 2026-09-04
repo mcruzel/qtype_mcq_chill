@@ -27,7 +27,6 @@ use core_privacy\local\request\writer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \qtype_mcq_chill\privacy\provider
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     public function test_get_metadata(): void {
         $collection = new collection('qtype_mcq_chill');
@@ -59,7 +58,6 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
      * @param mixed $value the value stored in the database.
      * @param string $expected the expected transformed value.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('user_preference_provider')]
     public function test_export_user_preferences(string $name, $value, string $expected): void {
         $this->resetAfterTest();
 

@@ -41,8 +41,6 @@ require_once($CFG->dirroot . '/question/type/mcq_chill/edit_mcq_chill_form.php')
  * @covers     \qtype_mcq_chill
  * @covers     \qtype_mcq_chill_edit_form
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\qtype_mcq_chill::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\qtype_mcq_chill_edit_form::class)]
 final class questiontype_test extends \advanced_testcase {
     /** @var qtype_mcq_chill the question type being tested. */
     protected $qtype;
@@ -112,7 +110,6 @@ final class questiontype_test extends \advanced_testcase {
      * @param string $which the test question.
      * @param float $expected the expected score.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('random_guess_score_provider')]
     public function test_get_random_guess_score(string $which, float $expected): void {
         $qdata = test_question_maker::get_question_data('mcq_chill', $which);
         $this->assertEqualsWithDelta($expected, $this->qtype->get_random_guess_score($qdata), 0.0000001);
@@ -153,7 +150,6 @@ final class questiontype_test extends \advanced_testcase {
      * @param string $which the test question.
      * @param array $expectedfractions answer id => fraction.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('possible_responses_provider')]
     public function test_get_possible_responses(string $which, array $expectedfractions): void {
         $qdata = test_question_maker::get_question_data('mcq_chill', $which);
         $expected = [];
@@ -188,7 +184,6 @@ final class questiontype_test extends \advanced_testcase {
      * @param mixed $value the raw value.
      * @param float $expected the cleaned value.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('clean_negative_marking_provider')]
     public function test_clean_negative_marking($value, float $expected): void {
         $this->assertEqualsWithDelta($expected, qtype_mcq_chill::clean_negative_marking($value), 0.0000001);
     }
@@ -225,7 +220,6 @@ final class questiontype_test extends \advanced_testcase {
      * @dataProvider question_saving_provider
      * @param string $which the test question.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('question_saving_provider')]
     public function test_question_saving(string $which): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -652,7 +646,6 @@ final class questiontype_test extends \advanced_testcase {
      * @param string $answersxml the answer elements.
      * @param string $expectederror the expected error string identifier.
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('unusable_xml_provider')]
     public function test_xml_import_of_an_unusable_question(string $answersxml, string $expectederror): void {
         $xml = '<question type="mcq_chill">
     <name><text>Unusable</text></name>
