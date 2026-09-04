@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="question/type/mcq_chill/db" VERSION="20250518" COMMENT="Qtype MCQ Chill install XML">
+<XMLDB PATH="question/type/mcq_chill/db" VERSION="20260903" COMMENT="XMLDB file for Moodle question/type/mcq_chill"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
   <TABLES>
-    <TABLE NAME="qtype_mcq_chill_options" COMMENT="Options spécifiques pour chaque question QCM Chill">
+    <TABLE NAME="qtype_mcq_chill_options" COMMENT="Options for QCM Chill questions: negative marking, all-or-nothing mode and shuffling.">
       <FIELDS>
-        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="negativemarking" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="allornothing" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key to question.id."/>
+        <FIELD NAME="negativemarking" TYPE="number" LENGTH="12" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="7" COMMENT="Penalty for each wrong choice selected, as a fraction of the question mark, between -1 and 0."/>
+        <FIELD NAME="allornothing" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if the mark is only awarded when all correct choices and no wrong choice are selected."/>
+        <FIELD NAME="shuffleanswers" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1 if the choices are shuffled for each attempt."/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="questionid"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign-unique" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

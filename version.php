@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for qtype_mcq_chill
+ * Version information for the QCM Chill question type.
  *
  * @package    qtype_mcq_chill
- * @copyright  2025 Your Name
+ * @copyright  2025 Maxime Cruzel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_mcq_chill';
-$plugin->version   = 2025051900;
-$plugin->requires  = 2022041900; // Moodle 4.0+
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = 'v0.2';
+$plugin->version = 2026090300;
+$plugin->requires = 2022041900; // Moodle 4.0 and later.
+$plugin->supported = [400, 502];
+$plugin->maturity = MATURITY_RC;
+$plugin->release = '1.0.0-rc1';
+$plugin->dependencies = [
+    'qtype_multichoice' => ANY_VERSION,
+];

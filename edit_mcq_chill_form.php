@@ -15,88 +15,236 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Form for editing QCM Chill questions.
+ * Editing form for the QCM Chill question type.
  *
  * @package    qtype_mcq_chill
- * @copyright  2025 Your Name
+ * @copyright  2025 Maxime Cruzel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * QCM Chill question editing form definition.
+ *
+ * On top of the standard question fields the form only contains: one line of
+ * plain text per choice with a "correct answer" checkbox, the negative marking
+ * applied to each wrong choice selected, the all-or-nothing option and the
+ * shuffling option.
+ *
+ * @copyright  2025 Maxime Cruzel
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class qtype_mcq_chill_edit_form extends question_edit_form {
+    /** @var int number of choice rows shown when creating a question. */
+    const NUM_CHOICES_START = 4;
 
-require_once($CFG->dirroot . '/question/type/multichoice/edit_multichoice_form.php');
+    /** @var int number of choice rows added each time the "add" button is used. */
+    const NUM_CHOICES_ADD = 2;
 
-class qtype_mcq_chill_edit_form extends qtype_multichoice_edit_form {
-    /**
-     * Build the QCM Chill editing form.
-     * Only keep the question text, answers with checkboxes, negative marking
-     * and the all-or-nothing option.
-     *
-     * @param MoodleQuickForm $mform the form being built.
-     */
+    /** @var string[] the settings stored in the qtype_mcq_chill_options table. */
+    const OPTION_FIELDS = ['negativemarking', 'allornothing', 'shuffleanswers'];
+
+    /** @var string[] the negative markings offered, as fractions, from none to -100%. */
+    const NEGATIVE_MARKING_OPTIONS = ['0.0', '-0.05', '-0.1', '-0.2', '-0.25', '-0.3333333', '-0.5', '-0.75', '-1.0'];
+
+    #[\Override]
     protected function definition_inner($mform) {
-        // Start from a clean form instead of the multichoice one.
-        // Question name and text are added by the base question_edit_form.
+        $this->add_per_answer_fields(
+            $mform,
+            get_string('choiceno', 'qtype_mcq_chill', '{no}'),
+            null,
+            self::NUM_CHOICES_START,
+            self::NUM_CHOICES_ADD
+        );
 
-        // Repeat answer fields with a checkbox indicating correct choices.
-        $repeated = [];
-        $repeated[] = $mform->createElement('text', 'answer[{no}]',
-            get_string('choicetext', 'qtype_mcq_chill'), ['size' => 40]);
-        $repeated[] = $mform->createElement('advcheckbox', 'fraction[{no}]', '',
-            get_string('correctanswer', 'qtype_mcq_chill'), [], [1, 0]);
+        $mform->addElement('header', 'gradinghdr', get_string('gradingoptions', 'qtype_mcq_chill'));
+        $mform->setExpanded('gradinghdr', true);
 
-        $repeatedoptions = [];
-        $repeatedoptions['fraction[{no}]']['default'] = 0;
-
-        $this->repeat_elements($repeated, 4, $repeatedoptions, 'noanswers',
-            'addanswers', 1, get_string('addmoreanswerblanks', 'qtype_multichoice'));
-
-        // Dropdown for the negative mark applied to each wrong checkbox.
-        $options = [];
-        for ($i = -100; $i <= 0; $i++) {
-            $options[$i] = $i . '%';
+        $currentnegativemarking = null;
+        if (isset($this->question->options->negativemarking)) {
+            $currentnegativemarking = (float) $this->question->options->negativemarking;
         }
-        $mform->addElement('select', 'negativemarking',
-            get_string('negativemarking', 'qtype_mcq_chill'), $options);
-        $mform->setDefault('negativemarking', 0);
+        $mform->addElement(
+            'select',
+            'negativemarking',
+            get_string('negativemarking', 'qtype_mcq_chill'),
+            self::get_negative_marking_options($currentnegativemarking)
+        );
+        $mform->addHelpButton('negativemarking', 'negativemarking', 'qtype_mcq_chill');
+        $mform->setDefault('negativemarking', $this->get_default_value('negativemarking', '0.0'));
 
-        // All or nothing option with help.
-        $mform->addElement('advcheckbox', 'allornothing',
-            get_string('allornothing', 'qtype_mcq_chill'));
+        $mform->addElement(
+            'advcheckbox',
+            'allornothing',
+            get_string('allornothing', 'qtype_mcq_chill'),
+            null,
+            null,
+            [0, 1]
+        );
         $mform->addHelpButton('allornothing', 'allornothing', 'qtype_mcq_chill');
+        $mform->setDefault('allornothing', $this->get_default_value('allornothing', 0));
+
+        $mform->addElement(
+            'advcheckbox',
+            'shuffleanswers',
+            get_string('shuffleanswers', 'qtype_mcq_chill'),
+            null,
+            null,
+            [0, 1]
+        );
+        $mform->addHelpButton('shuffleanswers', 'shuffleanswers', 'qtype_mcq_chill');
+        $mform->setDefault('shuffleanswers', $this->get_default_value('shuffleanswers', 1));
     }
 
-    public function set_data($question) {
-        if (isset($question->options)) {
-            $question->negativemarking = $question->options->negativemarking;
-            $question->allornothing = $question->options->allornothing;
-            if (!empty($question->options->answers)) {
-                $i = 0;
-                foreach ($question->options->answers as $ans) {
-                    $question->answer[$i] = $ans->answer;
-                    $question->fraction[$i] = $ans->fraction > 0 ? 1 : 0;
-                    $i++;
-                }
-            }
-        }
-        parent::set_data($question);
+    #[\Override]
+    protected function get_per_answer_fields($mform, $label, $gradeoptions, &$repeatedoptions, &$answersoption) {
+        $choice = [];
+        $choice[] = $mform->createElement('text', 'answer', $label, ['size' => 50]);
+        $choice[] = $mform->createElement(
+            'advcheckbox',
+            'fraction',
+            '',
+            get_string('correctanswer', 'qtype_mcq_chill'),
+            null,
+            [0, 1]
+        );
+
+        $repeated = [];
+        $repeated[] = $mform->createElement('group', 'answergroup', $label, $choice, null, false);
+
+        $repeatedoptions['answer']['type'] = PARAM_RAW;
+        $repeatedoptions['fraction']['type'] = PARAM_INT;
+        $repeatedoptions['fraction']['default'] = 0;
+        $answersoption = 'answers';
+        return $repeated;
     }
 
-    public function data_preprocessing($question) {
+    #[\Override]
+    protected function data_preprocessing($question) {
         $question = parent::data_preprocessing($question);
-        if (isset($question->options)) {
-            $question->negativemarking = $question->options->negativemarking;
-            $question->allornothing = $question->options->allornothing;
+
+        if (!empty($question->options)) {
+            foreach (self::OPTION_FIELDS as $field) {
+                if (isset($question->options->$field)) {
+                    $question->$field = $question->options->$field;
+                }
+            }
             if (!empty($question->options->answers)) {
-                $i = 0;
-                foreach ($question->options->answers as $ans) {
-                    $question->answer[$i] = $ans->answer;
-                    $question->fraction[$i] = $ans->fraction > 0 ? 1 : 0;
-                    $i++;
+                $key = 0;
+                foreach ($question->options->answers as $answer) {
+                    $question->answer[$key] = $answer->answer;
+                    $question->fraction[$key] = qtype_mcq_chill::is_correct_choice($answer->fraction) ? 1 : 0;
+                    // The repeated elements set a flat default for each checkbox, which would otherwise
+                    // take precedence over the stored value (same workaround as the core question types).
+                    unset($this->_form->_defaultValues["fraction[{$key}]"]);
+                    $key++;
                 }
             }
         }
+
+        if (isset($question->negativemarking)) {
+            $question->negativemarking = self::negative_marking_key(
+                qtype_mcq_chill::clean_negative_marking($question->negativemarking)
+            );
+        }
+
         return $question;
     }
-}
 
+    #[\Override]
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        $numchoices = 0;
+        $numcorrect = 0;
+        foreach ($data['answer'] ?? [] as $key => $answer) {
+            $iscorrect = !empty($data['fraction'][$key]);
+            if (trim((string) $answer) === '') {
+                if ($iscorrect) {
+                    $errors["answergroup[{$key}]"] = get_string('errcorrectblank', 'qtype_mcq_chill');
+                }
+                continue;
+            }
+            $numchoices++;
+            if ($iscorrect) {
+                $numcorrect++;
+            }
+        }
+
+        if ($numchoices < qtype_mcq_chill::MIN_CHOICES) {
+            for ($key = $numchoices; $key < qtype_mcq_chill::MIN_CHOICES; $key++) {
+                $errors["answergroup[{$key}]"] = get_string('notenoughchoices', 'qtype_mcq_chill', qtype_mcq_chill::MIN_CHOICES);
+            }
+        } else if ($numcorrect === 0) {
+            $errors['answergroup[0]'] = get_string('errnocorrectanswer', 'qtype_mcq_chill');
+        }
+
+        return $errors;
+    }
+
+    #[\Override]
+    public function qtype() {
+        return 'mcq_chill';
+    }
+
+    /**
+     * The choices offered for the negative marking, from none (0) to -100%.
+     *
+     * The keys are the fractions as strings, like the grade selects of the core
+     * question types; the list is deliberately short. A stored value that is
+     * not in the list (for instance after an XML import) is added so that it is
+     * not silently lost.
+     *
+     * @param float|null $current the value currently stored for the question, if any.
+     * @return array fraction => label.
+     */
+    public static function get_negative_marking_options(?float $current = null): array {
+        $options = [];
+        foreach (self::NEGATIVE_MARKING_OPTIONS as $fraction) {
+            if ((float) $fraction == 0) {
+                $options[$fraction] = get_string('none');
+            } else {
+                $options[$fraction] = format_float(100 * (float) $fraction, 5, true, true) . '%';
+            }
+        }
+
+        if ($current !== null && $current < 0 && !self::has_fraction_option($options, $current)) {
+            $options[self::negative_marking_key($current)] = format_float(100 * $current, 5, true, true) . '%';
+            uksort($options, function ($a, $b) {
+                return (float) $b <=> (float) $a;
+            });
+        }
+
+        return $options;
+    }
+
+    /**
+     * The key of the negative marking select that denotes a stored value.
+     *
+     * @param float $value the stored fraction.
+     * @return string the matching key of the select, or the value with up to 7 decimals when not listed.
+     */
+    public static function negative_marking_key(float $value): string {
+        foreach (self::NEGATIVE_MARKING_OPTIONS as $key) {
+            if (abs((float) $key - $value) < 0.0000005) {
+                return $key;
+            }
+        }
+        return rtrim(rtrim(number_format($value, 7, '.', ''), '0'), '.');
+    }
+
+    /**
+     * Whether a fraction is already one of the select options.
+     *
+     * @param array $options fraction => label.
+     * @param float $fraction the fraction to look for.
+     * @return bool true if present.
+     */
+    protected static function has_fraction_option(array $options, float $fraction): bool {
+        foreach (array_keys($options) as $key) {
+            if (abs((float) $key - $fraction) < 0.0000005) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
