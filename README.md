@@ -1,3 +1,7 @@
+# Précaution
+
+Ce plugin est le produit d'un test de performance en vibe coding des modèles Frontier IA en effort maximal. Il n'a pas vocation à être déployé sur des instances de production avant audit complet du code.
+
 # QCM Chill (`qtype_mcq_chill`)
 
 Type de question Moodle « QCM Chill » : un questionnaire à choix multiples à
@@ -128,10 +132,3 @@ mais les filtres du site (notation mathématique, multilangue) s'appliquent.
   Moodle 4.0, 4.1, 4.5, 5.0, 5.1 et 5.2, sous PostgreSQL et MariaDB.
 - La traduction française est livrée dans `lang/fr` ; lors d'une publication
   dans la base de plugins Moodle, elle a vocation à rejoindre AMOS.
-
-## Licence
-
-Les fichiers PHP portent l'en-tête GNU GPL v3 ou ultérieure, licence requise
-pour un plugin Moodle (le code étend des classes du cœur, lui-même sous GPL).
-Le fichier `LICENSE` du dépôt indique encore la licence MIT : il appartient à
-l'auteur de l'aligner sur la GPL v3+ avant toute publication.
