@@ -25,11 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_mcq_chill';
-$plugin->version = 2026090300;
+$plugin->version = 2026091800;
 $plugin->requires = 2022041900; // Moodle 4.0 and later.
 $plugin->supported = [400, 502];
 $plugin->maturity = MATURITY_RC;
-$plugin->release = '1.0.0-rc1';
+$plugin->release = '1.0.0-rc2';
 $plugin->dependencies = [
     'qtype_multichoice' => ANY_VERSION,
 ];
