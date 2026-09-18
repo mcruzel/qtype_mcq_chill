@@ -128,5 +128,10 @@ function xmldb_qtype_mcq_chill_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026090300, 'qtype', 'mcq_chill');
     }
 
+    if ($oldversion < 2026091800) {
+        // Editing form JS only (add/remove/reorder rows); no database change.
+        upgrade_plugin_savepoint(true, 2026091800, 'qtype', 'mcq_chill');
+    }
+
     return true;
 }
