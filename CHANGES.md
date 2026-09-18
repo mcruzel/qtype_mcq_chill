@@ -1,5 +1,13 @@
 # Historique des versions
 
+## 1.0.0-rc2 (2026-09-18)
+
+- Formulaire d'édition : ajout / suppression / réordonnancement des réponses
+  sans rechargement de page (glisser-déposer + boutons Monter / Descendre).
+- Numéro de version Moodle incrémenté (`2026091800`) pour que l'upload ZIP
+  déclenche bien une mise à jour si le plugin était déjà installé.
+- CI GitHub Actions désactivée en automatique (lancement manuel uniquement).
+
 ## 1.0.0-rc1 (2026-09-03)
 
 Réécriture complète du plugin à la suite d'un audit (conformité à la
@@ -23,9 +31,7 @@ spécification, API Moodle, sécurité, style de code, compatibilité).
 - Script de mise à niveau depuis la version 0.2 (conversion des pourcentages
   en fractions, nettoyage des lignes héritées de `qtype_multichoice`).
 - Tests PHPUnit (notation, type de question, formulaire, parcours de
-  tentative, sauvegarde/restauration, mise à niveau, vie privée) et
-  intégration continue GitHub Actions pour Moodle 4.0 à 5.2 (PostgreSQL et
-  MariaDB).
+  tentative, sauvegarde/restauration, mise à niveau, vie privée).
 
 ## 0.2
 
