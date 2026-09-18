@@ -1,5 +1,29 @@
 # Historique des versions
 
+## 1.0.0-rc3 (2026-09-18)
+
+Passe d'ergonomie sur le formulaire d'édition, à la suite d'un audit UX
+(guidage à la première utilisation, accessibilité, cohérence visuelle),
+sans modifier le module JS existant ni relancer de build Moodle grunt :
+
+- Ajout d'une consigne visible avant la liste des choix (nombre minimal de
+  choix, texte brut sans HTML, lignes vides ignorées), pour un enseignant
+  qui découvre le formulaire sans devoir ouvrir l'aide contextuelle.
+- Ajout d'un texte d'exemple (`placeholder`) dans le champ de saisie de
+  chaque choix.
+- Libellés dédiés au plugin pour les boutons Monter / Descendre injectés
+  par le module de réordonnancement (au lieu des chaînes cœur génériques),
+  et libellé plus explicite pour le bouton Supprimer ("Supprimer cette
+  réponse").
+- Nouveau fichier `styles.css` : cibles tactiles d'au moins 44x44 px pour
+  la poignée de glisser-déposer et les boutons Ajouter / Supprimer /
+  Monter / Descendre, anneau de focus visible au clavier
+  (`:focus-visible`), retour visuel net pendant un glisser-déposer ou un
+  déplacement au clavier, et repli des contrôles sur une ligne dédiée en
+  dessous de 768 px.
+- Numéro de version incrémenté (`2026091801`) pour que l'upload ZIP
+  déclenche une mise à jour si le plugin était déjà installé.
+
 ## 1.0.0-rc2 (2026-09-18)
 
 - Formulaire d'édition : ajout / suppression / réordonnancement des réponses
