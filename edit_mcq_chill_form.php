@@ -1,4 +1,4 @@
-<?php
+&lt;?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 
 /**
  * Editing form for the QCM Chill question type.
@@ -48,6 +48,13 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
 
     #[\Override]
     protected function definition_inner($mform) {
+        $mform->addElement(
+            'static',
+            'choicesintro',
+            '',
+            get_string('choicesintro', 'qtype_mcq_chill', qtype_mcq_chill::MIN_CHOICES)
+        );
+
         $this->add_per_answer_fields(
             $mform,
             get_string('choiceno', 'qtype_mcq_chill', '{no}'),
@@ -124,15 +131,18 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
             'removeLabel' => get_string('removeanswer', 'qtype_mcq_chill'),
             'choiceLabel' => get_string('choiceno', 'qtype_mcq_chill', '{$a}'),
             'dragHandleLabel' => get_string('draghandle', 'qtype_mcq_chill'),
-            'moveUpLabel' => get_string('moveup'),
-            'moveDownLabel' => get_string('movedown'),
+            'moveUpLabel' => get_string('movechoiceup', 'qtype_mcq_chill'),
+            'moveDownLabel' => get_string('movechoicedown', 'qtype_mcq_chill'),
         ]]);
     }
 
     #[\Override]
     protected function get_per_answer_fields($mform, $label, $gradeoptions, &$repeatedoptions, &$answersoption) {
         $choice = [];
-        $choice[] = $mform->createElement('text', 'answer', $label, ['size' => 50]);
+        $choice[] = $mform->createElement('text', 'answer', $label, [
+            'size' => 50,
+            'placeholder' => get_string('choiceplaceholder', 'qtype_mcq_chill'),
+        ]);
         $choice[] = $mform->createElement(
             'advcheckbox',
             'fraction',
@@ -244,7 +254,7 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
         if ($current !== null && $current < 0 && !self::has_fraction_option($options, $current)) {
             $options[self::negative_marking_key($current)] = format_float(100 * $current, 5, true, true) . '%';
             uksort($options, function ($a, $b) {
-                return (float) $b <=> (float) $a;
+                return (float) $b &lt;=&gt; (float) $a;
             });
         }
 
@@ -259,7 +269,7 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
      */
     public static function negative_marking_key(float $value): string {
         foreach (self::NEGATIVE_MARKING_OPTIONS as $key) {
-            if (abs((float) $key - $value) < 0.0000005) {
+            if (abs((float) $key - $value) &lt; 0.0000005) {
                 return $key;
             }
         }
@@ -275,7 +285,7 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
      */
     protected static function has_fraction_option(array $options, float $fraction): bool {
         foreach (array_keys($options) as $key) {
-            if (abs((float) $key - $fraction) < 0.0000005) {
+            if (abs((float) $key - $fraction) &lt; 0.0000005) {
                 return true;
             }
         }
