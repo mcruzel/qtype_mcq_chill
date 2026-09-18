@@ -83,6 +83,27 @@ la pénalité, que le mode « tout ou rien » soit activé ou non.
 
 ## Installation
 
+Le dossier **doit** s'appeler `mcq_chill` (pas `qtype_mcq_chill`, pas
+`qtype_mcq_chill-main`). Sinon Moodle refuse le paquet à l'upload ZIP, ou
+n'installe rien.
+
+### Upload ZIP dans l'administration
+
+1. Télécharger le ZIP GitHub.
+2. Extraire, **renommer le dossier racine en `mcq_chill`**, rezipper ce dossier
+   (le ZIP doit contenir `mcq_chill/version.php` à la racine du dossier, pas
+   les fichiers à plat ni un dossier `qtype_mcq_chill-main`).
+3. *Administration du site > Plugins > Installer des plugins* : envoyer ce ZIP.
+4. Terminer depuis *Administration du site > Notifications*.
+5. Purger les caches (y compris les caches JS) après une mise à jour du
+   formulaire d'édition.
+
+Si le plugin était déjà installé, Moodle n'affiche une mise à jour que si le
+numéro dans `version.php` a augmenté. À partir de la 1.0.0-rc2 c'est
+`2026091800`.
+
+### Copie manuelle
+
 1. Copier ce dossier dans `question/type/` sous le nom `mcq_chill`
    (`moodle/question/type/mcq_chill`, ou `moodle/public/question/type/mcq_chill`
    à partir de Moodle 5.1).
@@ -127,8 +148,5 @@ mais les filtres du site (notation mathématique, multilangue) s'appliquent.
   vendor/bin/phpunit --testsuite qtype_mcq_chill_testsuite
   ```
 
-- Intégration continue GitHub Actions (`.github/workflows/moodle-ci.yml`)
-  avec [moodle-plugin-ci](https://github.com/moodlehq/moodle-plugin-ci) sur
-  Moodle 4.0, 4.1, 4.5, 5.0, 5.1 et 5.2, sous PostgreSQL et MariaDB.
 - La traduction française est livrée dans `lang/fr` ; lors d'une publication
   dans la base de plugins Moodle, elle a vocation à rejoindre AMOS.
