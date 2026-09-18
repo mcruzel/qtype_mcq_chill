@@ -123,6 +123,9 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
             'addLabel' => get_string('addanswer', 'qtype_mcq_chill'),
             'removeLabel' => get_string('removeanswer', 'qtype_mcq_chill'),
             'choiceLabel' => get_string('choiceno', 'qtype_mcq_chill', '{$a}'),
+            'dragHandleLabel' => get_string('draghandle', 'qtype_mcq_chill'),
+            'moveUpLabel' => get_string('moveup'),
+            'moveDownLabel' => get_string('movedown'),
         ]]);
     }
 

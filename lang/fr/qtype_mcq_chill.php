@@ -29,6 +29,7 @@ $string['allornothing'] = 'Tout ou rien';
 $string['allornothing_help'] = 'Si cette option est activée, la note complète n\'est attribuée que si toutes les bonnes réponses sont cochées et aucune mauvaise. Toute autre réponse vaut zéro, diminué des points négatifs pour chaque mauvaise case cochée (avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate » seulement ; les autres comportements ne font jamais descendre une question sous zéro).';
 $string['choiceno'] = 'Réponse {$a}';
 $string['correctanswer'] = 'Bonne réponse';
+$string['draghandle'] = 'Glisser pour réordonner';
 $string['errcorrectblank'] = 'Une réponse vide ne peut pas être marquée comme bonne réponse.';
 $string['errnocorrectanswer'] = 'Au moins une réponse doit être marquée comme bonne réponse.';
 $string['gradingoptions'] = 'Notation';

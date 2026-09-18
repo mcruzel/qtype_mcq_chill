@@ -29,6 +29,7 @@ $string['allornothing'] = 'All or nothing';
 $string['allornothing_help'] = 'If enabled, the full mark is awarded only when every correct choice is selected and no wrong choice is selected. Any other response scores zero, minus the negative marking for each wrong choice selected (with the "Deferred feedback" and "Immediate feedback" behaviours only; the other behaviours never take a question below zero).';
 $string['choiceno'] = 'Choice {$a}';
 $string['correctanswer'] = 'Correct answer';
+$string['draghandle'] = 'Drag to reorder';
 $string['errcorrectblank'] = 'A blank choice cannot be marked as correct.';
 $string['errnocorrectanswer'] = 'At least one choice must be marked as correct.';
 $string['gradingoptions'] = 'Grading';
