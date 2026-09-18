@@ -55,6 +55,7 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
             self::NUM_CHOICES_START,
             self::NUM_CHOICES_ADD
         );
+        $this->init_dynamic_answer_rows();
 
         $mform->addElement('header', 'gradinghdr', get_string('gradingoptions', 'qtype_mcq_chill'));
         $mform->setExpanded('gradinghdr', true);
@@ -93,6 +94,36 @@ class qtype_mcq_chill_edit_form extends question_edit_form {
         );
         $mform->addHelpButton('shuffleanswers', 'shuffleanswers', 'qtype_mcq_chill');
         $mform->setDefault('shuffleanswers', $this->get_default_value('shuffleanswers', 1));
+    }
+
+    /**
+     * Load the JS that adds and removes choice rows without a page reload.
+     *
+     * The PHP "add more fields" button is kept for users without JavaScript;
+     * the module hides it once it is running.
+     */
+    protected function init_dynamic_answer_rows(): void {
+        global $PAGE;
+
+        if (!$PAGE->has_set_url()) {
+            return;
+        }
+
+        $startindex = self::NUM_CHOICES_START;
+        if (!empty($this->question->options->answers)) {
+            $startindex = count($this->question->options->answers);
+        }
+
+        $PAGE->requires->js_call_amd('qtype_mcq_chill/answer_rows', 'init', [[
+            'groupName' => 'answergroup',
+            'repeatCountName' => 'noanswers',
+            'phpAddButtonName' => 'addanswers',
+            'startIndex' => $startindex,
+            'minChoices' => qtype_mcq_chill::MIN_CHOICES,
+            'addLabel' => get_string('addanswer', 'qtype_mcq_chill'),
+            'removeLabel' => get_string('removeanswer', 'qtype_mcq_chill'),
+            'choiceLabel' => get_string('choiceno', 'qtype_mcq_chill', '{$a}'),
+        ]]);
     }
 
     #[\Override]

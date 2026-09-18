@@ -24,6 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['addanswer'] = '+ Add a choice';
 $string['allornothing'] = 'All or nothing';
 $string['allornothing_help'] = 'If enabled, the full mark is awarded only when every correct choice is selected and no wrong choice is selected. Any other response scores zero, minus the negative marking for each wrong choice selected (with the "Deferred feedback" and "Immediate feedback" behaviours only; the other behaviours never take a question below zero).';
 $string['choiceno'] = 'Choice {$a}';
@@ -46,5 +47,6 @@ $string['privacy:preference:allornothing'] = 'Whether the "All or nothing" optio
 $string['privacy:preference:defaultmark'] = 'The default mark set for a given question.';
 $string['privacy:preference:negativemarking'] = 'The negative marking set in the last question you created.';
 $string['privacy:preference:shuffleanswers'] = 'Whether the choices were shuffled in the last question you created.';
+$string['removeanswer'] = 'Remove';
 $string['shuffleanswers'] = 'Shuffle the choices?';
 $string['shuffleanswers_help'] = 'If enabled, the order of the choices is randomly shuffled for each attempt, provided that "Shuffle within questions" in the activity settings is also enabled.';

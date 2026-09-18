@@ -24,6 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['addanswer'] = '+ Ajouter une réponse';
 $string['allornothing'] = 'Tout ou rien';
 $string['allornothing_help'] = 'Si cette option est activée, la note complète n\'est attribuée que si toutes les bonnes réponses sont cochées et aucune mauvaise. Toute autre réponse vaut zéro, diminué des points négatifs pour chaque mauvaise case cochée (avec les comportements « Rétroaction a posteriori » et « Rétroaction immédiate » seulement ; les autres comportements ne font jamais descendre une question sous zéro).';
 $string['choiceno'] = 'Réponse {$a}';
@@ -46,5 +47,6 @@ $string['privacy:preference:allornothing'] = 'Indique si l\'option « Tout ou ri
 $string['privacy:preference:defaultmark'] = 'La note par défaut définie pour une question donnée.';
 $string['privacy:preference:negativemarking'] = 'Les points négatifs définis dans la dernière question que vous avez créée.';
 $string['privacy:preference:shuffleanswers'] = 'Indique si les réponses étaient mélangées dans la dernière question que vous avez créée.';
+$string['removeanswer'] = 'Supprimer';
 $string['shuffleanswers'] = 'Mélanger les réponses ?';
 $string['shuffleanswers_help'] = 'Si cette option est activée, l\'ordre des réponses est mélangé aléatoirement à chaque tentative, à condition que le réglage « Mélanger les éléments des questions » soit aussi activé dans l\'activité.';
