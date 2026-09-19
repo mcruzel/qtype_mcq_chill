@@ -1,0 +1,211 @@
+/* This file is part of Moodle - http://moodle.org/
+ *
+ * Moodle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Moodle is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Styles for the Drag-drop into text Chill question type.
+ *
+ * Editing-form rules follow the same patterns as qtype_mcq_chill (touch
+ * targets ≥44×44px, :focus-visible, wrap below 768px). Attempt-page rules
+ * cover the drop zones, the choice bank and the select fallback.
+ *
+ * @package    qtype_ddto_chill
+ * @copyright  2026 Maxime Cruzel
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* Hide the core HTML question-text editor: authors use the source textarea. */
+.qtype-ddto-chill-form #fitem_id_questiontext,
+.qtype-ddto-chill-js #fitem_id_questiontext {
+    display: none;
+}
+
+.qtype-ddto-chill-sourcetext,
+textarea[name="sourcetext"] {
+    width: 100%;
+    max-width: 48rem;
+    min-height: 6rem;
+}
+
+.qtype-ddto-chill-gaplist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0.5rem 0 1rem;
+}
+
+.qtype-ddto-chill-gapword {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 0.35rem;
+    cursor: pointer;
+}
+
+.qtype-ddto-chill-gapword:focus-within {
+    outline: 2px solid #0f6cbf;
+    outline-offset: 2px;
+}
+
+.qtype-ddto-chill-isgap {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Reorder controls on the distractor rows (answer_rows.js). */
+.qtype-ddto-chill-js .qtype-ddto-chill-reorder {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    vertical-align: middle;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-drag-handle,
+.qtype-ddto-chill-js .qtype-ddto-chill-reorder button,
+.qtype-ddto-chill-js .qtype-ddto-chill-add-answer,
+.qtype-ddto-chill-js .qtype-ddto-chill-remove-answer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    box-sizing: border-box;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-drag-handle {
+    border-radius: 0.35rem;
+    border: 1px solid transparent;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-drag-handle:hover {
+    background-color: rgba(15, 108, 191, 0.1);
+    border-color: rgba(15, 108, 191, 0.3);
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-drag-handle:focus-visible,
+.qtype-ddto-chill-js .qtype-ddto-chill-reorder button:focus-visible,
+.qtype-ddto-chill-js .qtype-ddto-chill-add-answer:focus-visible,
+.qtype-ddto-chill-js .qtype-ddto-chill-remove-answer:focus-visible,
+.qtype-ddto-chill-select:focus-visible,
+.qtype-ddto-chill-drag:focus-visible {
+    outline: 2px solid #0f6cbf;
+    outline-offset: 2px;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-drag-handle[aria-grabbed="true"] {
+    background-color: rgba(15, 108, 191, 0.15);
+    border-color: #0f6cbf;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-dragging {
+    background-color: rgba(15, 108, 191, 0.08);
+    box-shadow: inset 3px 0 0 #0f6cbf;
+}
+
+.qtype-ddto-chill-js .qtype-ddto-chill-reorder button:disabled,
+.qtype-ddto-chill-js .qtype-ddto-chill-remove-answer:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.qtype-ddto-chill-add-answer-wrapper {
+    margin-top: 0.75rem;
+}
+
+/* Attempt: drop zones and choice bank. */
+.qtype_ddto_chill .qtype-ddto-chill-drop {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 2.75rem;
+    margin: 0 0.15rem;
+    padding: 0.15rem 0.25rem;
+    border: 1px dashed #0f6cbf;
+    border-radius: 0.35rem;
+    vertical-align: middle;
+    background-color: rgba(15, 108, 191, 0.06);
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drop.qtype-ddto-chill-drop-over {
+    background-color: rgba(15, 108, 191, 0.18);
+    border-style: solid;
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-select {
+    min-width: 6rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid #0f6cbf;
+    border-radius: 0.35rem;
+    background: #fff;
+    cursor: grab;
+    user-select: none;
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drag:hover {
+    background-color: rgba(15, 108, 191, 0.1);
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drag.qtype-ddto-chill-used {
+    opacity: 0.45;
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drop.correct {
+    border-color: #357a32;
+    background-color: rgba(53, 122, 50, 0.12);
+}
+
+.qtype_ddto_chill .qtype-ddto-chill-drop.incorrect {
+    border-color: #ca3120;
+    background-color: rgba(202, 49, 32, 0.08);
+}
+
+@media (max-width: 767.98px) {
+    .qtype-ddto-chill-js .qtype-ddto-chill-reorder {
+        display: flex;
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    /* On narrow screens the native select is the primary control. */
+    .qtype_ddto_chill .qtype-ddto-chill-bank {
+        display: none;
+    }
+
+    .qtype_ddto_chill .qtype-ddto-chill-select {
+        width: 100%;
+        max-width: 16rem;
+    }
+}

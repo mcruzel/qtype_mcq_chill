@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="question/type/ddto_chill/db" VERSION="20260919" COMMENT="XMLDB file for Moodle question/type/ddto_chill"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="qtype_ddto_chill_options" COMMENT="Options for Drag-drop into text Chill questions: negative marking, all-or-nothing mode and shuffling.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key to question.id."/>
+        <FIELD NAME="negativemarking" TYPE="number" LENGTH="12" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="7" COMMENT="Penalty for each incorrectly filled gap, as a fraction of the question mark, between -1 and 0."/>
+        <FIELD NAME="allornothing" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if the mark is only awarded when every gap is filled correctly."/>
+        <FIELD NAME="shuffleanswers" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1 if the choice bank is shuffled for each attempt."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign-unique" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="qtype_ddto_chill_choices" COMMENT="Choices (gap answers and distractors) for Drag-drop into text Chill questions.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key to question.id."/>
+        <FIELD NAME="text" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Plain-text choice shown in the bank and in the drop-down fallback."/>
+        <FIELD NAME="choicegroup" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Choice group. v1 uses a single pool (group 1) for every gap."/>
+        <FIELD NAME="fraction" TYPE="number" LENGTH="12" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="7" COMMENT="1.0 if this choice is the correct answer of at least one gap, 0.0 for a distractor."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="questionid-id" UNIQUE="false" FIELDS="questionid, id"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
